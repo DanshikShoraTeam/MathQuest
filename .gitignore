@@ -1,0 +1,16 @@
+# Python
+backend/venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+db.sqlite3
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# OS
+.DS_Store
