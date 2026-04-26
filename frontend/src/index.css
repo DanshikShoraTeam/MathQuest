@@ -1,18 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap');
 
 :root {
-  /* Color Palette - Updated to Blue Theme */
-  --bg-page: #f8fafc;
-  --primary: #0081d1;
-  --primary-hover: #006eb3;
-  --accent: #38bdf8;
-  --text-dark: #1e293b;
-  --text-muted: #64748b;
-  --border-light: #e2e8f0;
-  --input-bg: #f8fafc;
+  /* Duolingo Inspired Palette */
+  --primary: #1cb0f6;
+  --primary-hover: #1899d6;
+  --success: #58cc02;
+  --success-hover: #46a302;
+  --error: #ff4b4b;
+  --error-hover: #e54343;
+  --warning: #ff9600;
+  
+  --bg-page: #f7f7f7;
+  --bg-card: #ffffff;
+  --text-dark: #4b4b4b;
+  --text-muted: #777777;
+  --border-light: #e5e5e5;
+  --input-bg: #f7f7f7;
 
-  /* Gradient */
-  --sidebar-gradient: linear-gradient(135deg, #0081d1 0%, #00c6ff 100%);
+  /* Elevation */
+  --shadow-sm: 0 2px 0 var(--border-light);
+  --shadow-md: 0 4px 0 var(--border-light);
+  --shadow-btn: 0 4px 0 rgba(0, 0, 0, 0.1);
 
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

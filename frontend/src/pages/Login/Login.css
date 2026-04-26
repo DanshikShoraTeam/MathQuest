@@ -4,23 +4,24 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at 0% 0%, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
+    background-color: var(--bg-page);
     overflow: hidden;
     position: relative;
 }
 
-/* ФОНОВЫЕ ЭЛЕМЕНТЫ (МАТЕМАТИКА) */
+/* ФОНОВЫЕ ЭЛЕМЕНТЫ */
 .auth-body::before,
 .auth-body::after {
-    content: "Σ";
     position: absolute;
     font-size: 30rem;
     font-weight: 900;
-    color: rgba(0, 129, 209, 0.03);
+    color: rgba(28, 176, 246, 0.05);
     z-index: 0;
+    font-family: 'Outfit', sans-serif;
 }
 
 .auth-body::before {
+    content: "Σ";
     top: -10%;
     left: -5%;
     transform: rotate(-15deg);
@@ -36,7 +37,7 @@
 .auth-container {
     background-color: #fff;
     border-radius: 30px;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
     position: relative;
     overflow: hidden;
     width: 100%;
@@ -45,6 +46,7 @@
     max-height: 100vh;
     z-index: 10;
     display: flex;
+    border: 2px solid var(--border-light);
 }
 
 /* ФОРМЫ */
@@ -57,7 +59,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0 50px;
+    padding: 0 60px;
     background: #fff;
 }
 
@@ -102,14 +104,15 @@ form {
 h1 {
     font-size: 3rem;
     font-weight: 800;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     color: var(--text-dark);
-    letter-spacing: -1.5px;
+    letter-spacing: -2px;
 }
 
 .subtitle {
     color: var(--text-muted);
     font-size: 1.1rem;
+    font-weight: 600;
     margin-bottom: 40px;
 }
 
@@ -129,35 +132,43 @@ h1 {
     left: 20px;
     width: 22px;
     height: 22px;
-    color: var(--text-dark);
-    opacity: 0.4;
+    color: #afafaf;
     pointer-events: none;
+    transition: color 0.2s;
 }
 
 input {
     width: 100%;
     padding: 18px 20px 18px 55px;
-    background: #f8fafc;
-    border: 2px solid transparent;
+    background: #f7f7f7;
+    border: 2px solid var(--border-light);
     border-radius: 16px;
     font-size: 1rem;
-    transition: all 0.3s;
+    font-weight: 600;
+    transition: all 0.2s;
 }
 
 input:focus {
     outline: none;
     background: #fff;
     border-color: var(--primary);
-    box-shadow: 0 10px 20px rgba(0, 129, 209, 0.05);
+    box-shadow: 0 0 0 4px rgba(28, 176, 246, 0.1);
+}
+
+input:focus + .input-icon {
+    color: var(--primary);
 }
 
 .forgot-password {
     display: block;
     margin: 15px 0 25px;
-    color: var(--text-muted);
+    color: #afafaf;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: 0.3s;
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: 0.2s;
 }
 
 .forgot-password:hover {
@@ -172,16 +183,23 @@ input:focus {
     font-weight: 800;
     font-size: 1.1rem;
     border-radius: 16px;
-    box-shadow: 0 12px 24px rgba(0, 129, 209, 0.2);
+    box-shadow: 0 4px 0 var(--primary-hover);
+    text-transform: uppercase;
+    transition: all 0.2s;
 }
 
 .submit-btn:hover {
-    background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 15px 30px rgba(0, 129, 209, 0.3);
+    box-shadow: 0 6px 0 var(--primary-hover);
+    filter: brightness(1.05);
 }
 
-/* OVERLAY */
+.submit-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 0px 0 transparent;
+}
+
+/* ПЕРЕКРЫТИЕ (OVERLAY) */
 .overlay-container {
     position: absolute;
     top: 0;
@@ -198,7 +216,7 @@ input:focus {
 }
 
 .overlay {
-    background: var(--sidebar-gradient);
+    background: var(--primary);
     color: #fff;
     position: relative;
     left: -100%;
@@ -247,7 +265,7 @@ input:focus {
 .formula-icon {
     font-size: 4rem;
     font-weight: 900;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     font-family: 'Outfit', sans-serif;
     opacity: 0.9;
     letter-spacing: -2px;
@@ -264,6 +282,7 @@ input:focus {
     font-size: 1.2rem;
     line-height: 1.6;
     margin-bottom: 40px;
+    font-weight: 600;
     opacity: 0.9;
 }
 
@@ -271,15 +290,24 @@ input:focus {
     background: transparent;
     border: 2px solid #fff;
     color: #fff;
-    padding: 15px 45px;
-    font-weight: 700;
+    padding: 16px 45px;
+    font-weight: 800;
     font-size: 1.1rem;
     border-radius: 16px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 0 rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
 }
 
 .ghost-btn:hover {
-    background: #fff;
-    color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 rgba(255, 255, 255, 0.3);
+}
+
+.ghost-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 0px 0 transparent;
 }
 
 .mobile-toggle {
@@ -287,18 +315,21 @@ input:focus {
     margin-top: 30px;
     font-size: 1rem;
     color: var(--text-muted);
+    font-weight: 700;
 }
 
 .mobile-toggle span {
     color: var(--primary);
     font-weight: 800;
     cursor: pointer;
+    text-transform: uppercase;
 }
 
-/* ADAPTIVE */
+/* АДАПТИВНОСТЬ */
 @media (max-width: 900px) {
     .auth-container {
         border-radius: 0;
+        border: none;
     }
     
     .overlay-container {
@@ -318,10 +349,6 @@ input:focus {
     }
     
     h1 {
-        font-size: 2.5rem;
-    }
-    
-    .overlay-panel h2 {
         font-size: 2.5rem;
     }
 }
