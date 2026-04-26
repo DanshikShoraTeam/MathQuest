@@ -33,6 +33,8 @@ const LessonEditor = () => {
   const [editingId, setEditingId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
 
+  const [editingFile, setEditingFile] = useState(null);
+
   useEffect(() => {
     fetchLesson();
   }, [lessonId]);
@@ -59,11 +61,11 @@ const LessonEditor = () => {
       ? 'https://youtube.com/watch?v=...'
       : type === 'GAME'
       ? 'fast-calc'
-      : '';
+      : '';   // FILE үшін бос
 
     try {
       const res = await api.post('materials/', {
-        lesson: lessonId,
+        lesson: parseInt(lessonId, 10),
         type,
         content: defaultContent,
         order: materials.length + 1,
@@ -71,19 +73,35 @@ const LessonEditor = () => {
       setMaterials(prev => [...prev, res.data]);
       setEditingId(res.data.id);
       setEditingContent(res.data.content);
-    } catch {
-      alert('Материал қосу мүмкін болмады');
+      setEditingFile(null);
+    } catch (err) {
+      console.error('Material POST error:', err.response?.data);
+      alert('Материал қосу мүмкін болмады: ' + JSON.stringify(err.response?.data));
     }
   };
 
   /* ── Материал өзгерту ── */
-  const saveMaterial = async (materialId) => {
+  const saveMaterial = async (materialId, type) => {
     try {
-      await api.patch(`materials/${materialId}/`, { content: editingContent });
+      let data;
+      let headers = {};
+      
+      if (type === 'FILE' && editingFile) {
+        data = new FormData();
+        data.append('file_upload', editingFile);
+        data.append('content', editingFile.name); // Файл атын content ретінде сақтаймыз
+        headers = { 'Content-Type': 'multipart/form-data' };
+      } else {
+        data = { content: editingContent };
+      }
+
+      const res = await api.patch(`materials/${materialId}/`, data, { headers });
+      
       setMaterials(prev =>
-        prev.map(m => m.id === materialId ? { ...m, content: editingContent } : m)
+        prev.map(m => m.id === materialId ? { ...m, content: res.data.content, file_upload: res.data.file_upload } : m)
       );
       setEditingId(null);
+      setEditingFile(null);
     } catch {
       alert('Сақтау мүмкін болмады');
     }
@@ -147,7 +165,7 @@ const LessonEditor = () => {
                   </div>
                   <div className="material-actions">
                     {isEditing ? (
-                      <button className="icon-btn green" onClick={() => saveMaterial(material.id)}>
+                      <button className="icon-btn green" onClick={() => saveMaterial(material.id, material.type)}>
                         <CheckIcon className="icon-sm" />
                       </button>
                     ) : (
@@ -193,13 +211,19 @@ const LessonEditor = () => {
                           </button>
                         ))}
                       </div>
+                    ) : material.type === 'FILE' ? (
+                      <input
+                        type="file"
+                        className="material-input"
+                        onChange={e => setEditingFile(e.target.files[0])}
+                      />
                     ) : (
                       <input
                         className="material-input"
                         value={editingContent}
                         onChange={e => setEditingContent(e.target.value)}
                         autoFocus
-                        placeholder={material.type === 'VIDEO' ? 'YouTube URL...' : 'Файл URL немесе жол...'}
+                        placeholder={'YouTube URL...'}
                       />
                     )
                   ) : (
@@ -224,8 +248,12 @@ const LessonEditor = () => {
                         <PuzzlePieceIcon className="game-preview-icon" />
                         <span>Ойын: <strong>{material.content}</strong></span>
                       </div>
+                    ) : material.type === 'FILE' && material.file_upload ? (
+                      <a href={material.file_upload} target="_blank" rel="noopener noreferrer" className="material-url-preview">
+                        Жүктелген файл: {material.content}
+                      </a>
                     ) : (
-                      <p className="material-url-preview">{material.content}</p>
+                      <p className="material-url-preview">{material.content || 'Файл жүктелмеген'}</p>
                     )
                   )}
                 </div>

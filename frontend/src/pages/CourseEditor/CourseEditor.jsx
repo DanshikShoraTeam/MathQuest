@@ -216,18 +216,19 @@ const CourseEditor = () => {
                 {expandedSection === section.id && (
                   <div className="lessons-list">
                     {(section.lessons || []).map((lesson, li) => (
-                      <div key={lesson.id} className="lesson-row">
+                      <div
+                        key={lesson.id}
+                        className="lesson-row clickable"
+                        onClick={() => navigate(`/teacher/lesson/${lesson.id}`)}
+                      >
                         <div className="lesson-num">{li + 1}</div>
                         <span className="lesson-title">{lesson.title}</span>
                         <button
-                          className="icon-btn"
-                          onClick={() => navigate(`/teacher/lesson/${lesson.id}`)}
-                        >
-                          <PencilIcon className="icon-sm" />
-                        </button>
-                        <button
                           className="icon-btn red"
-                          onClick={() => deleteLesson(section.id, lesson.id)}
+                          onClick={(e) => {
+                            e.stopPropagation(); // басқану шаратын тоқтату
+                            deleteLesson(section.id, lesson.id);
+                          }}
                         >
                           <TrashIcon className="icon-sm" />
                         </button>

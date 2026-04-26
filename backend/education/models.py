@@ -51,7 +51,8 @@ class Material(models.Model):
     )
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='materials')
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    content = models.TextField(help_text="Мәтін мазмұны немесе видео/файл сілтемесі")
+    content = models.TextField(blank=True, help_text="Мәтін мазмұны немесе видео/файл сілтемесі")
+    file_upload = models.FileField(upload_to='materials/', null=True, blank=True, help_text="Жүктелген файл (тек FILE типі үшін)")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

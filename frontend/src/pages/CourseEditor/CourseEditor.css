@@ -256,10 +256,22 @@
   background: #fff;
   border: 1px solid var(--border-light);
   border-radius: 10px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
 
-.lesson-row:hover { border-color: #d0d0d0; }
+/* Сабаққа басқанда редактор ашылады */
+.lesson-row.clickable {
+  cursor: pointer;
+}
+
+.lesson-row.clickable:hover {
+  background: #f1f7ff;
+  border-color: var(--primary);
+}
+
+.lesson-row.clickable:hover .lesson-title {
+  color: var(--primary);
+}
 
 .lesson-num {
   width: 24px;
