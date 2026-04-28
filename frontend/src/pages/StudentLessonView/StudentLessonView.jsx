@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   XMarkIcon,
-  PlayCircleIcon,
-  DocumentArrowDownIcon,
   PuzzlePieceIcon,
   CheckCircleIcon,
   ChevronLeftIcon,
@@ -14,15 +12,15 @@ import {
   ArrowDownTrayIcon,
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/solid';
+import api from '../../api';
+import confetti from 'canvas-confetti';
+import './StudentLessonView.css';
 
 const getYouTubeId = (url) => {
   if (!url) return null;
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   return match ? match[1] : null;
 };
-import api from '../../api';
-import confetti from 'canvas-confetti';
-import './StudentLessonView.css';
 
 const StudentLessonView = () => {
   const { lessonId } = useParams();
@@ -40,6 +38,8 @@ const StudentLessonView = () => {
   const [qIdx, setQIdx] = useState(0);
   const [selectedAns, setSelectedAns] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
+  // useRef — score-ды нақты сақтау үшін (React state async болғандықтан)
+  const scoreRef = useRef(0);
   const [testScore, setTestScore] = useState(0);
 
   useEffect(() => {
@@ -59,22 +59,33 @@ const StudentLessonView = () => {
   };
 
   const handleGameClick = (gameType) => {
+    const mat = materials[activeStep];
     navigate(`/game/${gameType}`, {
       state: {
         fromLessonId: lessonId,
         activeStep: activeStep,
-        questions: material.data?.questions || []
+        questions: mat?.data?.questions || []
       }
     });
   };
 
+  // Сабақты аяқтау — тест болса алдымен тест, болмаса тікелей аяқтайды
   const handleComplete = async () => {
     const mandatoryTest = materials.find(m => m.type === 'TEST');
     if (mandatoryTest && !testResults) {
+      scoreRef.current = 0;
+      setTestScore(0);
+      setQIdx(0);
+      setSelectedAns(null);
+      setIsAnswered(false);
       setCurrentTest(mandatoryTest);
       setTestMode(true);
       return;
     }
+    await completeLesson();
+  };
+
+  const completeLesson = async () => {
     try {
       setIsFinished(true);
       confetti({
@@ -98,7 +109,8 @@ const StudentLessonView = () => {
     setSelectedAns(ans);
     setIsAnswered(true);
     if (ans === currentTest.data.questions[qIdx].a) {
-      setTestScore(prev => prev + 1);
+      scoreRef.current += 1;
+      setTestScore(scoreRef.current);
     }
   };
 
@@ -108,18 +120,21 @@ const StudentLessonView = () => {
       setSelectedAns(null);
       setIsAnswered(false);
     } else {
-      setTestResults({ 
-        score: testScore + (selectedAns === currentTest.data.questions[qIdx].a ? 1 : 0), 
-        total: currentTest.data.questions.length 
+      // scoreRef.current — нақты ұпай (async state емес)
+      setTestResults({
+        score: scoreRef.current,
+        total: currentTest.data.questions.length
       });
       setTestMode(false);
     }
   };
 
   const renderTest = () => {
-    if (!currentTest || !currentTest.data || !currentTest.data.questions) return null;
+    if (!currentTest?.data?.questions) return null;
     const q = currentTest.data.questions[qIdx];
-    const options = [q.a, q.w1, q.w2, q.w3].filter(o => o && o !== '-').sort();
+    const options = [q.a, q.w1, q.w2, q.w3].filter(o => o && o !== '-');
+    // Варианттарды кездейсоқ орналастыру (бірінші варианты әрқашан дұрыс болмасын)
+    const shuffledOptions = options.sort(() => Math.random() - 0.5);
 
     return (
       <div className="test-overlay">
@@ -130,21 +145,29 @@ const StudentLessonView = () => {
           <div className="test-card">
             <span className="q-count">Сұрақ {qIdx + 1} / {currentTest.data.questions.length}</span>
             <h2 className="test-question-text">{q.q}</h2>
-            <div className="test-options-grid">
-              {options.map((opt, i) => {
-                let className = "test-opt-btn";
-                if (isAnswered) {
-                  if (opt === q.a) className += " correct";
-                  else if (opt === selectedAns) className += " wrong";
-                  else className += " disabled";
-                }
-                return (
-                  <button key={i} className={className} onClick={() => handleTestAnswer(opt)} disabled={isAnswered}>
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
+
+            {shuffledOptions.length < 2 ? (
+              <p style={{ color: '#ff4b4b', textAlign: 'center', padding: '20px' }}>
+                Бұл сұрақтың варианттары толық толтырылмаған.
+              </p>
+            ) : (
+              <div className="test-options-grid">
+                {shuffledOptions.map((opt, i) => {
+                  let cls = "test-opt-btn";
+                  if (isAnswered) {
+                    if (opt === q.a) cls += " correct";
+                    else if (opt === selectedAns) cls += " wrong";
+                    else cls += " disabled";
+                  }
+                  return (
+                    <button key={i} className={cls} onClick={() => handleTestAnswer(opt)} disabled={isAnswered}>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {isAnswered && (
               <div className={`explanation-box ${selectedAns === q.a ? 'success' : 'error'}`}>
                 <div className="exp-header">
@@ -191,7 +214,8 @@ const StudentLessonView = () => {
             <div className="empty-state">Материалдар табылмады</div>
           ) : (
             <div className="active-material">
-              {material.type === 'GAME' ? (
+
+              {material.type === 'GAME' && (
                 <div className="game-content-view">
                   <div className="game-card-mobile-premium">
                     <div className="game-card-accent"></div>
@@ -207,7 +231,25 @@ const StudentLessonView = () => {
                     </button>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {/* TEST — тек ақпарат, батырма жоқ. "Аяқтау" басқанда тест шығады */}
+              {material.type === 'TEST' && (
+                <div className="game-content-view">
+                  <div className="game-card-mobile-premium test-card-preview">
+                    <div className="game-card-accent test-accent"></div>
+                    <div className="game-card-icon-wrapper test-icon-bg">
+                      <CheckBadgeIcon className="game-icon-svg" />
+                    </div>
+                    <div className="game-card-details">
+                      <h2>{material.title || 'Білімді тексеру'}</h2>
+                      <p>Сабақты аяқтау үшін осы тестті тапсыру қажет. Төмендегі <strong>Аяқтау</strong> батырмасын басыңыз.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(material.type === 'TEXT' || material.type === 'VIDEO' || material.type === 'FILE') && (
                 <>
                   {(material.title || material.description) && (
                     <div className="material-info-header">
@@ -217,9 +259,25 @@ const StudentLessonView = () => {
                   )}
 
                   {material.type === 'TEXT' && (
-                    <div className="text-content-view">
-                      {material.content}
-                    </div>
+                    <>
+                      <div className="text-content-view">{material.content}</div>
+                      {material.content?.startsWith('http') && (
+                        <div className="file-viewer-mobile">
+                          <a href={material.content} target="_blank" rel="noreferrer" className="file-card-mobile link-card">
+                            <div className="file-icon-wrapper link-icon">
+                              <LinkIcon className="file-icon-large" />
+                            </div>
+                            <div className="file-info-mobile">
+                              <span className="file-name-mobile">{material.title || 'Сыртқы сілтеме'}</span>
+                              <span className="file-size-mobile">{material.content.substring(0, 40)}...</span>
+                            </div>
+                            <div className="download-icon-btn">
+                              <ArrowTopRightOnSquareIcon style={{ width: 20 }} />
+                            </div>
+                          </a>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {material.type === 'VIDEO' && (
@@ -234,71 +292,32 @@ const StudentLessonView = () => {
                       )}
                     </div>
                   )}
+
+                  {material.type === 'FILE' && (
+                    <div className="file-viewer-mobile">
+                      <a
+                        href={material.file_upload || material.content}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        className="file-card-mobile"
+                      >
+                        <div className="file-icon-wrapper">
+                          <DocumentIcon className="file-icon-large" />
+                        </div>
+                        <div className="file-info-mobile">
+                          <span className="file-name-mobile">{material.title || 'Оқу материалы (Файл)'}</span>
+                          <span className="file-size-mobile">Жүктеу үшін басыңыз</span>
+                        </div>
+                        <div className="download-icon-btn">
+                          <ArrowDownTrayIcon style={{ width: 24 }} />
+                        </div>
+                      </a>
+                    </div>
+                  )}
                 </>
               )}
 
-              {material.type === 'TEST' && (
-                <div className="game-content-view">
-                  <div className="game-card-mobile-premium test-card-preview">
-                    <div className="game-card-accent test-accent"></div>
-                    <div className="game-card-icon-wrapper test-icon-bg">
-                      <CheckBadgeIcon className="game-icon-svg" />
-                    </div>
-                    <div className="game-card-details">
-                      <h2>{material.title || 'Білімді тексеру'}</h2>
-                      <p>Сабақты аяқтау үшін осы тестті тапсыруыңыз қажет.</p>
-                    </div>
-                    <button className="start-game-premium-btn test-start-btn" onClick={handleComplete}>
-                      Тестті бастау
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {material.type === 'FILE' && (
-                <div className="file-viewer-mobile">
-                  <a
-                    href={material.file_upload || material.content}
-                    download
-                    target="_blank"
-                    rel="noreferrer"
-                    className="file-card-mobile"
-                  >
-                    <div className="file-icon-wrapper">
-                      <DocumentIcon className="file-icon-large" />
-                    </div>
-                    <div className="file-info-mobile">
-                      <span className="file-name-mobile">{material.title || 'Оқу материалы (Файл)'}</span>
-                      <span className="file-size-mobile">Жүктеу үшін басыңыз</span>
-                    </div>
-                    <div className="download-icon-btn">
-                      <ArrowDownTrayIcon style={{ width: 24 }} />
-                    </div>
-                  </a>
-                </div>
-              )}
-
-              {material.type === 'TEXT' && (material.content.startsWith('http')) && (
-                <div className="file-viewer-mobile">
-                  <a
-                    href={material.content}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="file-card-mobile link-card"
-                  >
-                    <div className="file-icon-wrapper link-icon">
-                      <LinkIcon className="file-icon-large" />
-                    </div>
-                    <div className="file-info-mobile">
-                      <span className="file-name-mobile">{material.title || 'Сыртқы сілтеме'}</span>
-                      <span className="file-size-mobile">{material.content.substring(0, 40)}...</span>
-                    </div>
-                    <div className="download-icon-btn">
-                      <ArrowTopRightOnSquareIcon style={{ width: 20 }} />
-                    </div>
-                  </a>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -332,10 +351,11 @@ const StudentLessonView = () => {
               <h2>Керемет!</h2>
               <p>Сіз тестті сәтті тапсырдыңыз.</p>
               <div className="score-badge">{testResults.score} / {testResults.total} ұпай</div>
-              <button className="finish-all-btn" onClick={() => navigate(-1)}>Курсқа қайту</button>
+              <button className="finish-all-btn" onClick={completeLesson}>Сабақты аяқтау</button>
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
