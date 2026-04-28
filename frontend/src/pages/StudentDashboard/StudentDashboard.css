@@ -1,0 +1,149 @@
+/* ── STUDENT DASHBOARD SPECIFIC STYLES ── */
+.student-dashboard-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-header-compact {
+  padding: 15px 20px;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.user-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-small {
+  width: 38px;
+  height: 38px;
+  background: #1cb0f6;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+
+.welcome-msg h3 { margin: 0; font-size: 0.95rem; font-weight: 900; color: #3c3c3c; }
+.welcome-msg p { margin: 2px 0 0 0; font-size: 0.7rem; color: #afafaf; font-weight: 700; }
+
+.header-xp-badge {
+  background: #fff5e6;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: #ff9600;
+}
+
+.app-scroll-content {
+  padding: 20px;
+}
+
+.mobile-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.m-stat-card {
+  background: white;
+  padding: 15px;
+  border-radius: 20px;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 0 #e5e7eb;
+}
+
+.m-icon { width: 22px; height: 22px; }
+.m-val { font-size: 1.1rem; font-weight: 900; }
+.m-lab { font-size: 0.6rem; font-weight: 800; color: #afafaf; text-transform: uppercase; }
+
+.m-stat-card.xp { color: #ff9600; }
+.m-stat-card.level { color: #58cc02; }
+.m-stat-card.streak { color: #ff4b4b; }
+.m-stat-card.rank { color: #1cb0f6; }
+
+.app-section {
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  border: 2px solid #e5e7eb;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 0 #e5e7eb;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.section-header h3 { font-size: 0.95rem; font-weight: 900; margin: 0; color: #3c3c3c; }
+
+.mini-course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mini-course-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 14px;
+  border: 1px solid #eef2f6;
+  cursor: pointer;
+}
+
+.mini-course-icon {
+  width: 40px;
+  height: 40px;
+  background: #1cb0f6;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.mini-course-info { flex: 1; }
+.mini-course-info h4 { margin: 0 0 4px 0; font-size: 0.8rem; font-weight: 800; }
+
+.mini-progress-bar { height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+.mini-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #58cc02 0%, #a5ed6e 100%);
+  border-radius: 6px;
+  transition: width 0.5s ease-out;
+}
+
+.mini-progress-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #58cc02;
+  margin-top: 4px;
+  display: block;
+}
+
+.empty-mini-courses { text-align: center; color: #afafaf; font-size: 0.8rem; padding: 10px 0; }

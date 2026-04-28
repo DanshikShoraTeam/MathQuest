@@ -1,116 +1,84 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../api';
 import { 
   AcademicCapIcon, 
-  FireIcon, 
-  CheckCircleIcon,
-  PlayIcon,
-  HandRaisedIcon,
-  TrophyIcon,
-  StarIcon,
-  BoltIcon,
-  RocketLaunchIcon
+  ChevronRightIcon
 } from '@heroicons/react/24/solid';
+import StudentLayout from '../../components/StudentLayout/StudentLayout';
 import './StudentCourses.css';
 
 const StudentCourses = () => {
-  const myCourses = [
-    { id: 1, title: 'Көбейту кестесі', teacher: 'Арман Самат', lessonsDone: 5, totalLessons: 10, color: '#1cb0f6' },
-    { id: 2, title: 'Логикалық есептер', teacher: 'Меруерт Асан', lessonsDone: 2, totalLessons: 8, color: '#58cc02' },
-    { id: 3, title: 'Бөлшектер', teacher: 'Арман Самат', lessonsDone: 0, totalLessons: 12, color: '#ff9600' },
-  ];
+  const [myCourses, setMyCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const coursesRes = await api.get('courses/');
+      const formattedCourses = coursesRes.data.map(course => {
+        let totalLessons = 0;
+        let lessonsDone = 0;
+        if (course.sections) {
+          course.sections.forEach(sec => {
+            if (sec.lessons) {
+              totalLessons += sec.lessons.length;
+              lessonsDone += sec.lessons.filter(l => l.is_completed).length;
+            }
+          });
+        }
+        return { ...course, lessonsDone, totalLessons };
+      });
+      setMyCourses(formattedCourses);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="loading-spinner">Жүктелуде...</div>;
 
   return (
-    <div className="student-container">
-      {/* HEADER */}
-      <header className="student-header">
-        <div className="header-content">
-          <div className="user-greet">
-            <h1>Сәлем, Азамат! <HandRaisedIcon className="greet-icon" /></h1>
-            <div className="streak-badge">
-              <FireIcon className="streak-icon" />
-              <span>5 күн қатарынан!</span>
-            </div>
-          </div>
-          <div className="user-rank">
-            <div className="rank-info">
-              <span>Лига: Алтын</span>
-              <div className="rank-bar"><div className="rank-fill"></div></div>
-            </div>
-            <div className="user-pfp">A</div>
-          </div>
-        </div>
-      </header>
+    <StudentLayout>
+      <div className="student-page-content">
+        <header className="app-header-compact">
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 900, margin: 0 }}>Курстарым</h2>
+          <AcademicCapIcon style={{ width: 22, color: '#1cb0f6' }} />
+        </header>
 
-      {/* MAIN CONTENT */}
-      <main className="student-main">
-        <section className="active-courses">
-          <h2>Менің курстарым</h2>
-          <div className="student-courses-grid">
-            {myCourses.map(course => {
-              const progress = (course.lessonsDone / course.totalLessons) * 100;
-              return (
-                <div key={course.id} className="student-course-card">
-                  <div className="course-card-top" style={{ backgroundColor: course.color }}>
-                    <AcademicCapIcon className="card-top-icon" />
-                  </div>
-                  <div className="course-card-body">
-                    <h3>{course.title}</h3>
-                    <p className="teacher-name">{course.teacher}</p>
-                    
-                    <div className="course-progress-section">
-                      <div className="progress-text">
-                        <span>{course.lessonsDone}/{course.totalLessons} сабақ</span>
-                        <span>{Math.round(progress)}%</span>
-                      </div>
-                      <div className="progress-track">
-                        <div 
-                          className="progress-fill" 
-                          style={{ width: `${progress}%`, backgroundColor: course.color }}
-                        ></div>
+        <div className="app-scroll-content">
+          <div className="course-list-vertical">
+            {myCourses.length === 0 ? (
+              <p style={{textAlign: 'center', color: '#afafaf', padding: '40px 0'}}>Сіз әлі ешқандай курсқа жазылмағансыз.</p>
+            ) : (
+              myCourses.map(course => {
+                const progress = (course.lessonsDone / (course.totalLessons || 1)) * 100;
+                return (
+                  <div key={course.id} className="course-app-card" onClick={() => navigate(`/student/course/${course.id}`)}>
+                    <div className="course-app-icon">
+                      <AcademicCapIcon style={{ width: 24 }} />
+                    </div>
+                    <div className="course-app-info">
+                      <h4>{course.title}</h4>
+                      <p>{course.lessonsDone}/{course.totalLessons} сабақ</p>
+                      <div className="mini-progress-bar">
+                        <div className="mini-progress-fill" style={{ width: `${progress}%` }}></div>
                       </div>
                     </div>
-
-                    <button className="continue-btn" style={{ color: course.color, borderColor: course.color }}>
-                      {progress === 0 ? 'Бастау' : 'Жалғастыру'}
-                      <PlayIcon className="btn-play-icon" />
-                    </button>
+                    <ChevronRightIcon style={{ width: 18, color: '#cbd5e1' }} />
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
-        </section>
-
-        {/* ACHIEVEMENTS OR FRIENDS */}
-        <section className="side-info">
-          <div className="info-card achievements">
-            <h3>Жетістіктерім</h3>
-            <div className="achievements-list">
-              <div className="achievement-item locked"><TrophyIcon className="ach-icon" /></div>
-              <div className="achievement-item"><StarIcon className="ach-icon" /></div>
-              <div className="achievement-item locked"><RocketLaunchIcon className="ach-icon" /></div>
-              <div className="achievement-item"><BoltIcon className="ach-icon" /></div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* BOTTOM NAV (MOBILE STYLE) */}
-      <nav className="bottom-nav">
-        <div className="nav-item active">
-          <AcademicCapIcon />
-          <span>Оқу</span>
         </div>
-        <div className="nav-item">
-          <FireIcon />
-          <span>Лига</span>
-        </div>
-        <div className="nav-item">
-          <CheckCircleIcon />
-          <span>Профиль</span>
-        </div>
-      </nav>
-    </div>
+      </div>
+    </StudentLayout>
   );
 };
 

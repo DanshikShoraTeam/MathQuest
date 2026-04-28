@@ -90,8 +90,18 @@
 }
 
 @keyframes show {
-    0%, 49.99% { opacity: 0; z-index: 1; }
-    50%, 100% { opacity: 1; z-index: 5; }
+
+    0%,
+    49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 1;
+        z-index: 5;
+    }
 }
 
 /* СТИЛИ КОНТЕНТА ФОРМЫ */
@@ -155,25 +165,23 @@ input:focus {
     box-shadow: 0 0 0 4px rgba(28, 176, 246, 0.1);
 }
 
-input:focus + .input-icon {
+input:focus+.input-icon {
     color: var(--primary);
 }
 
-.forgot-password {
-    display: block;
-    margin: 15px 0 25px;
-    color: #afafaf;
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: 0.2s;
+input[type="radio"] {
+    width: auto;
+    padding: 0;
+    margin: 0;
+    margin-right: 8px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    accent-color: var(--primary);
+    transform: scale(1.2);
+    cursor: pointer;
 }
 
-.forgot-password:hover {
-    color: var(--primary);
-}
 
 .submit-btn {
     width: 100%;
@@ -311,7 +319,6 @@ input:focus + .input-icon {
 }
 
 .mobile-toggle {
-    display: none;
     margin-top: 30px;
     font-size: 1rem;
     color: var(--text-muted);
@@ -331,23 +338,24 @@ input:focus + .input-icon {
         border-radius: 0;
         border: none;
     }
-    
+
     .overlay-container {
         display: none;
     }
-    
-    .sign-in-container, .sign-up-container {
+
+    .sign-in-container,
+    .sign-up-container {
         width: 100%;
     }
-    
+
     .auth-container.right-panel-active .sign-up-container {
         transform: translateX(0);
     }
-    
+
     .mobile-toggle {
         display: block;
     }
-    
+
     h1 {
         font-size: 2.5rem;
     }

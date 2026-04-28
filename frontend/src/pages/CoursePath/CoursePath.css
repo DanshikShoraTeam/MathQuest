@@ -1,229 +1,124 @@
-.path-container {
-    min-height: 100vh;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
+/* ── COURSE PATH (DUOLINGO STYLE) ── */
+.course-path-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
 }
 
-/* HEADER */
-.path-header {
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    border-bottom: 2px solid var(--border-light);
-    background: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+.path-scroll-body {
+  flex: 1;
+  padding: 40px 20px;
+  overflow-y: auto;
 }
 
-.back-btn {
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    color: #afafaf;
-    transition: color 0.2s;
+.zig-zag-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-.back-btn:hover {
-    color: var(--primary);
+.node-wrapper-mini {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
-.back-btn svg {
-    width: 28px;
-    height: 28px;
+.node-circle-app {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.2s;
 }
 
-.path-header-info {
-    flex: 1;
+/* Status Colors */
+.node-circle-app.completed { 
+  background: #58cc02; 
+  box-shadow: 0 6px 0 #46a302; 
+}
+.node-circle-app.current { 
+  background: #1cb0f6; 
+  box-shadow: 0 6px 0 #1899d6; 
+  animation: nodeBounce 2s infinite ease-in-out;
+}
+.node-circle-app.locked { 
+  background: #e5e7eb; 
+  box-shadow: 0 6px 0 #cbd5e1; 
+  cursor: not-allowed; 
 }
 
-.path-header-info h2 {
-    font-size: 1.2rem;
-    font-weight: 800;
-    margin-bottom: 4px;
-    color: var(--text-dark);
+/* Icon Sizing (CRITICAL FIX) */
+.node-icon-mini { 
+  width: 32px !important; 
+  height: 32px !important; 
+  color: white; 
 }
 
-.header-progress {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: var(--primary);
+@keyframes nodeBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.05); }
 }
 
-.header-progress-bar {
-    flex: 1;
-    height: 12px;
-    background: #e5e5e5;
-    border-radius: 10px;
+.node-line-mini {
+  position: absolute;
+  top: 70px;
+  width: 12px;
+  height: 30px;
+  background: #e5e7eb;
+  z-index: 1;
 }
 
-.header-progress-bar .fill {
-    height: 100%;
-    background: var(--primary);
-    border-radius: 10px;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
+.node-wrapper-mini.completed .node-line-mini {
+  background: #58cc02;
 }
 
-/* PATH SCROLL */
-.path-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 50px 20px;
-    background: #fff;
+.node-tooltip-mini {
+  position: absolute;
+  top: -40px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  white-space: nowrap;
+  border: 2px solid #e5e7eb;
+  color: #3c3c3c;
 }
 
-.path-items {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-    max-width: 400px;
-    margin: 0 auto;
+/* Header UI */
+.app-header-compact {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  background: white;
+  border-bottom: 2px solid #f1f5f9;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.path-item-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.back-btn-mini {
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  color: #afafaf;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.path-node {
-    width: 75px;
-    height: 75px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.path-node:hover {
-    transform: scale(1.05);
-}
-
-.path-node:active {
-    transform: scale(0.95) translateY(4px);
-}
-
-/* Completed Status */
-.path-node.completed {
-    background: var(--primary);
-    box-shadow: 0 8px 0 #1899d6;
-}
-
-.path-node.completed:active {
-    box-shadow: 0 2px 0 #1899d6;
-}
-
-/* Current Status */
-.path-node.current {
-    background: var(--success);
-    box-shadow: 0 8px 0 #46a302;
-    animation: bounce 2.5s infinite ease-in-out;
-}
-
-.path-node.current:active {
-    box-shadow: 0 2px 0 #46a302;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-8px) scale(1.05); }
-}
-
-/* Locked Status */
-.path-node.locked {
-    background: #e5e5e5;
-    box-shadow: 0 8px 0 #afafaf;
-    cursor: not-allowed;
-}
-
-.node-icon {
-    width: 34px;
-    height: 34px;
-    color: #fff;
-}
-
-.active-star {
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
-}
-
-.node-tooltip {
-    position: absolute;
-    bottom: -40px;
-    background: #fff;
-    color: var(--text-dark);
-    padding: 8px 16px;
-    border-radius: 14px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    white-space: nowrap;
-    border: 2px solid var(--border-light);
-    box-shadow: 0 4px 0 var(--border-light);
-    pointer-events: none;
-}
-
-.path-line {
-    position: absolute;
-    top: 75px;
-    width: 14px;
-    height: 40px;
-    background: #e5e5e5;
-    z-index: 1;
-}
-
-.path-item-wrapper.completed .path-line {
-    background: var(--primary);
-}
-
-/* FOOTER */
-.path-footer {
-    padding: 20px;
-    border-top: 2px solid var(--border-light);
-    background: #fff;
-}
-
-.unit-card {
-    background: var(--primary);
-    color: #fff;
-    padding: 20px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 6px 0 var(--primary-hover);
-}
-
-.unit-icon {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 900;
-}
-
-.unit-info h3 {
-    font-size: 1.2rem;
-    font-weight: 800;
-    margin-bottom: 2px;
-}
-
-.unit-info p {
-    font-size: 0.9rem;
-    font-weight: 600;
-    opacity: 0.9;
-}
+.back-btn-mini:hover { color: #1cb0f6; }

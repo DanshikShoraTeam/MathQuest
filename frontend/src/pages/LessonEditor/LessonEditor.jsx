@@ -10,16 +10,22 @@ import {
   PuzzlePieceIcon,
   CheckIcon,
   PencilIcon,
+  CheckBadgeIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  XMarkIcon,
+  ArrowUpTrayIcon,
+  EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 import api from '../../api';
 import './LessonEditor.css';
 
-/* Материал типтерінің конфигурациясы */
 const MATERIAL_TYPES = [
-  { type: 'TEXT',  label: 'Мәтін',  icon: DocumentTextIcon,  color: '#1cb0f6' },
-  { type: 'VIDEO', label: 'Видео',  icon: VideoCameraIcon,   color: '#ff9600' },
-  { type: 'FILE',  label: 'Файл',   icon: DocumentIcon,      color: '#58cc02' },
-  { type: 'GAME',  label: 'Ойын',   icon: PuzzlePieceIcon,   color: '#cc02a8' },
+  { type: 'TEXT', label: 'Мәтін', icon: DocumentTextIcon, color: '#1cb0f6' },
+  { type: 'VIDEO', label: 'Видео', icon: VideoCameraIcon, color: '#ff9600' },
+  { type: 'GAME', label: 'Ойын', icon: PuzzlePieceIcon, color: '#cc02a8' },
+  { type: 'TEST', label: 'Тест', icon: CheckBadgeIcon, color: '#ff4b4b' },
+  { type: 'FILE', label: 'Файл', icon: DocumentIcon, color: '#58cc02' },
 ];
 
 const LessonEditor = () => {
@@ -32,8 +38,191 @@ const LessonEditor = () => {
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
-
+  const [editingTitle, setEditingTitle] = useState('');
+  const [editingDescription, setEditingDescription] = useState('');
+  const [editingData, setEditingData] = useState({ questions: [] });
   const [editingFile, setEditingFile] = useState(null);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditingFile(file);
+      setEditingContent(file.name);
+    }
+  };
+
+  const generateRandomQuestions = (gameType, count = 10) => {
+    const questions = [];
+    for (let i = 0; i < count; i++) {
+      let q = '', a = '', w1 = '', w2 = '', w3 = '', explanation = '';
+      const n1 = Math.floor(Math.random() * 20) + 1;
+      const n2 = Math.floor(Math.random() * 20) + 1;
+
+      if (gameType === 'fast-calc' || gameType === 'bomb') {
+        const ops = ['+', '-', '*'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let res = 0;
+        if (op === '+') res = n1 + n2;
+        else if (op === '-') res = n1 - n2;
+        else res = n1 * Math.floor(Math.random() * 10);
+        
+        q = `${n1} ${op === '*' ? '×' : op} ${n2} = ?`;
+        a = res.toString();
+        w1 = (res + 2).toString();
+        w2 = (res - 2).toString();
+        w3 = (res + 5).toString();
+        explanation = `${n1} мен ${n2} сандарының ${op === '+' ? 'қосындысы' : op === '-' ? 'айырмасы' : 'көбейтіндісі'} ${res}-ке тең.`;
+      } else if (gameType === 'roulette') {
+        const ops = ['+', '-', '×'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let res = 0;
+        if (op === '+') res = n1 + n2;
+        else if (op === '-') res = n1 - n2;
+        else {
+          const n3 = Math.floor(Math.random() * 10);
+          res = n1 * n3;
+          q = `${n1} ? ${n3} = ${res}`;
+        }
+        if (op !== '×') q = `${n1} ? ${n2} = ${res}`;
+        
+        a = op;
+        const otherOps = ops.filter(o => o !== op);
+        w1 = otherOps[0];
+        w2 = otherOps[1];
+        w3 = '÷';
+        explanation = `Бұл жерде ${op} амалы қолданылған, өйткені ${n1} ${op} ${op === '×' ? q.split('?')[1].split('=')[0].trim() : n2} = ${res}.`;
+      } else if (gameType === 'true-false') {
+        const isCorrect = Math.random() > 0.5;
+        const res = n1 + n2;
+        const fakeRes = res + (Math.random() > 0.5 ? 2 : -2);
+        q = `${n1} + ${n2} = ${isCorrect ? res : fakeRes}`;
+        a = isCorrect ? 'True' : 'False';
+        explanation = `${n1} + ${n2} = ${res}. Сондықтан бұл жауап ${isCorrect ? 'дұрыс' : 'қате'}.`;
+      } else if (gameType === 'sequence') {
+        const start = Math.floor(Math.random() * 10) + 1;
+        const step = Math.floor(Math.random() * 5) + 2;
+        const seq = [start, start + step, start + step * 2, start + step * 3];
+        const correct = start + step * 4;
+        q = `${seq.join(', ')}, ...`;
+        a = correct.toString();
+        w1 = (correct + step).toString();
+        w2 = (correct + 2).toString();
+        w3 = (correct - 2).toString();
+        explanation = `Бұл тізбек ${step}-ке артып жатыр. Келесі сан: ${correct}.`;
+      }
+      questions.push({ q, a, w1, w2, w3, explanation });
+    }
+    return questions;
+  };
+
+  const updateQ = (idx, field, val) => {
+    const newQ = [...editingData.questions];
+    newQ[idx][field] = val;
+    setEditingData({ ...editingData, questions: newQ });
+  };
+
+  const removeQ = (idx) => {
+    const newQ = editingData.questions.filter((_, i) => i !== idx);
+    setEditingData({ ...editingData, questions: newQ });
+  };
+
+  const renderQuestionInputs = (q, qIdx) => {
+    const currentMaterial = materials.find(m => m.id === editingId);
+    const isTest = currentMaterial?.type === 'TEST';
+
+    // ТЕСТ үшін әрқашан стандартты 4 жауаптық интерфейс (PDD сияқты)
+    if (isTest) {
+      return (
+        <div key={qIdx} className="q-row standard-row">
+          <input className="q-main" value={q.q} onChange={e => updateQ(qIdx, 'q', e.target.value)} placeholder="Сұрақ..." />
+          <div className="ans-grid">
+            <input className="correct" value={q.a} onChange={e => updateQ(qIdx, 'a', e.target.value)} placeholder="Дұрыс" title="Дұрыс жауап" />
+            <input value={q.w1} onChange={e => updateQ(qIdx, 'w1', e.target.value)} placeholder="Қате 1" />
+            <input value={q.w2} onChange={e => updateQ(qIdx, 'w2', e.target.value)} placeholder="Қате 2" />
+            <input value={q.w3} onChange={e => updateQ(qIdx, 'w3', e.target.value)} placeholder="Қате 3" />
+          </div>
+          <input className="exp" value={q.explanation} onChange={e => updateQ(qIdx, 'explanation', e.target.value)} placeholder="Түсіндірме (Неге бұл жауап дұрыс?)" />
+          <button className="del-btn" onClick={() => removeQ(qIdx)}><TrashIcon style={{width:16}}/></button>
+        </div>
+      );
+    }
+
+    if (editingContent === 'true-false') {
+      return (
+        <div key={qIdx} className="q-row true-false-row">
+          <div className="q-inputs-main">
+            <input className="q-main" value={q.q} onChange={e => updateQ(qIdx, 'q', e.target.value)} placeholder="Теңдеу немесе Тұжырым..." />
+            <select value={q.a} onChange={e => updateQ(qIdx, 'a', e.target.value)}>
+              <option value="True">Шындық (True)</option>
+              <option value="False">Жалған (False)</option>
+            </select>
+          </div>
+          {isTest && (
+            <input className="exp" value={q.explanation} onChange={e => updateQ(qIdx, 'explanation', e.target.value)} placeholder="Түсіндірме..." />
+          )}
+          <button className="del-btn" onClick={() => removeQ(qIdx)}><TrashIcon style={{width:16}}/></button>
+        </div>
+      );
+    }
+    if (editingContent === 'sequence') {
+      return (
+        <div key={qIdx} className="q-row sequence-row">
+          <div className="q-inputs-main">
+            <input className="q-main" value={q.q} onChange={e => updateQ(qIdx, 'q', e.target.value)} placeholder="Тізбек (мысалы: 2, 4, 6, ...)" />
+            <div className="ans-grid" style={{ marginTop: '10px' }}>
+              <input className="correct" value={q.a} onChange={e => updateQ(qIdx, 'a', e.target.value)} placeholder="Дұрыс" />
+              <input value={q.w1} onChange={e => updateQ(qIdx, 'w1', e.target.value)} placeholder="Қате 1" />
+              <input value={q.w2} onChange={e => updateQ(qIdx, 'w2', e.target.value)} placeholder="Қате 2" />
+              <input value={q.w3} onChange={e => updateQ(qIdx, 'w3', e.target.value)} placeholder="Қате 3" />
+            </div>
+          </div>
+          {isTest && (
+            <input className="exp" value={q.explanation} onChange={e => updateQ(qIdx, 'explanation', e.target.value)} placeholder="Түсіндірме..." />
+          )}
+          <button className="del-btn" onClick={() => removeQ(qIdx)}><TrashIcon style={{width:16}}/></button>
+        </div>
+      );
+    }
+    if (editingContent === 'roulette') {
+      return (
+        <div key={qIdx} className="q-row roulette-row">
+          <div className="q-inputs-main">
+            <input className="q-main" value={q.q} onChange={e => updateQ(qIdx, 'q', e.target.value)} placeholder="Мысалы: 10 ? 2 = 5" />
+            <div className="ans-grid" style={{ marginTop: '10px' }}>
+              <select className="correct" value={q.a} onChange={e => updateQ(qIdx, 'a', e.target.value)} title="Дұрыс амал">
+                <option value="+">+</option>
+                <option value="-">-</option>
+                <option value="×">×</option>
+                <option value="÷">÷</option>
+              </select>
+              <input value={q.w1} onChange={e => updateQ(qIdx, 'w1', e.target.value)} placeholder="Қате амал 1" />
+              <input value={q.w2} onChange={e => updateQ(qIdx, 'w2', e.target.value)} placeholder="Қате амал 2" />
+              <input value={q.w3} onChange={e => updateQ(qIdx, 'w3', e.target.value)} placeholder="Қате амал 3" />
+            </div>
+          </div>
+          {isTest && (
+            <input className="exp" value={q.explanation} onChange={e => updateQ(qIdx, 'explanation', e.target.value)} placeholder="Түсіндірме..." />
+          )}
+          <button className="del-btn" onClick={() => removeQ(qIdx)}><TrashIcon style={{width:16}}/></button>
+        </div>
+      );
+    }
+    return (
+      <div key={qIdx} className="q-row standard-row">
+        <input className="q-main" value={q.q} onChange={e => updateQ(qIdx, 'q', e.target.value)} placeholder="Сұрақ..." />
+        <div className="ans-grid">
+          <input className="correct" value={q.a} onChange={e => updateQ(qIdx, 'a', e.target.value)} placeholder="Дұрыс" title="Дұрыс жауап" />
+          <input value={q.w1} onChange={e => updateQ(qIdx, 'w1', e.target.value)} placeholder="Қате 1" />
+          <input value={q.w2} onChange={e => updateQ(qIdx, 'w2', e.target.value)} placeholder="Қате 2" />
+          <input value={q.w3} onChange={e => updateQ(qIdx, 'w3', e.target.value)} placeholder="Қате 3" />
+        </div>
+        {isTest && (
+          <input className="exp" value={q.explanation} onChange={e => updateQ(qIdx, 'explanation', e.target.value)} placeholder="Түсіндірме / Түсіндіру..." />
+        )}
+        <button className="del-btn" onClick={() => removeQ(qIdx)}><TrashIcon style={{width:16}}/></button>
+      </div>
+    );
+  };
 
   useEffect(() => {
     fetchLesson();
@@ -43,7 +232,7 @@ const LessonEditor = () => {
     try {
       const res = await api.get(`lessons/${lessonId}/`);
       setLesson(res.data);
-      setMaterials(res.data.materials || []);
+      setMaterials(res.data.materials.sort((a, b) => a.order - b.order) || []);
     } catch {
       alert('Сабақ жүктелмеді');
       navigate(-1);
@@ -52,76 +241,83 @@ const LessonEditor = () => {
     }
   };
 
-  /* ── Материал қосу ── */
   const addMaterial = async (type) => {
     setShowTypePicker(false);
-    const defaultContent = type === 'TEXT'
-      ? 'Мәтінді осында жазыңыз...'
-      : type === 'VIDEO'
-      ? 'https://youtube.com/watch?v=...'
-      : type === 'GAME'
-      ? 'fast-calc'
-      : '';   // FILE үшін бос
+    const defaultContent = type === 'TEXT' ? 'Жаңа мәтін...' : type === 'VIDEO' ? '' : type === 'GAME' ? '' : '';
+    // Жаңа материал қосар алдында редакциялау күйлерін тазалау
+    setEditingId(null);
+    setEditingContent(defaultContent);
+    setEditingTitle('');
+    setEditingDescription('');
+    setEditingData({ questions: [] });
+    setEditingFile(null);
 
     try {
       const res = await api.post('materials/', {
         lesson: parseInt(lessonId, 10),
         type,
         content: defaultContent,
-        order: materials.length + 1,
+        data: type === 'GAME' ? { questions: [] } : {},
+        order: materials.length,
       });
-      setMaterials(prev => [...prev, res.data]);
+      setMaterials([...materials, res.data]);
       setEditingId(res.data.id);
-      setEditingContent(res.data.content);
-      setEditingFile(null);
-    } catch (err) {
-      console.error('Material POST error:', err.response?.data);
-      alert('Материал қосу мүмкін болмады: ' + JSON.stringify(err.response?.data));
+    } catch {
+      alert('Материал қосу мүмкін болмады');
     }
   };
 
-  /* ── Материал өзгерту ── */
   const saveMaterial = async (materialId, type) => {
     try {
       let data;
       let headers = {};
-      
       if (type === 'FILE' && editingFile) {
         data = new FormData();
         data.append('file_upload', editingFile);
-        data.append('content', editingFile.name); // Файл атын content ретінде сақтаймыз
+        data.append('content', editingFile.name);
+        data.append('title', editingTitle);
+        data.append('description', editingDescription);
         headers = { 'Content-Type': 'multipart/form-data' };
       } else {
-        data = { content: editingContent };
+        data = {
+          content: editingContent,
+          title: editingTitle,
+          description: editingDescription,
+          data: editingData
+        };
       }
-
       const res = await api.patch(`materials/${materialId}/`, data, { headers });
-      
-      setMaterials(prev =>
-        prev.map(m => m.id === materialId ? { ...m, content: res.data.content, file_upload: res.data.file_upload } : m)
-      );
+      setMaterials(materials.map(m => m.id === materialId ? res.data : m));
       setEditingId(null);
-      setEditingFile(null);
     } catch {
       alert('Сақтау мүмкін болмады');
     }
   };
 
-  /* ── Материал жою ── */
-  const deleteMaterial = async (materialId) => {
-    if (!confirm('Материалды жою керек пе?')) return;
+  const deleteMaterial = async (id) => {
+    if (!confirm('Жою керек пе?')) return;
     try {
-      await api.delete(`materials/${materialId}/`);
-      setMaterials(prev => prev.filter(m => m.id !== materialId));
+      await api.delete(`materials/${id}/`);
+      setMaterials(materials.filter(m => m.id !== id));
     } catch {
       alert('Жою мүмкін болмады');
     }
   };
 
-  const getTypeConfig = (type) =>
-    MATERIAL_TYPES.find(t => t.type === type) || MATERIAL_TYPES[0];
+  const moveMaterial = async (index, direction) => {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === materials.length - 1)) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const newMaterials = [...materials];
+    [newMaterials[index], newMaterials[newIndex]] = [newMaterials[newIndex], newMaterials[index]];
+    setMaterials(newMaterials);
+    try {
+      await Promise.all([
+        api.patch(`materials/${newMaterials[index].id}/`, { order: index }),
+        api.patch(`materials/${newMaterials[newIndex].id}/`, { order: newIndex })
+      ]);
+    } catch (err) { console.error(err); }
+  };
 
-  /* ── YouTube embed helper ── */
   const getYouTubeId = (url) => {
     const match = url.match(/(?:v=|youtu\.be\/)([^&\n?#]+)/);
     return match ? match[1] : null;
@@ -131,165 +327,229 @@ const LessonEditor = () => {
 
   return (
     <div className="lesson-editor">
-
-      {/* HEADER */}
       <header className="lesson-header">
         <button className="back-btn" onClick={() => navigate(-1)}>
-          <ChevronLeftIcon className="back-icon" />
+          <ChevronLeftIcon />
           <span>Артқа</span>
         </button>
         <div className="lesson-header-center">
           <h1>{lesson?.title}</h1>
-          <span>{materials.length} материал</span>
+          <span>{materials.length} блок</span>
         </div>
-        <div style={{ width: 80 }} /> {/* spacer */}
+        <div style={{ width: 80 }} />
       </header>
 
-      {/* CONTENT */}
       <div className="lesson-content">
-
-        {/* Materials list */}
         <div className="materials-list">
-          {materials.map((material, idx) => {
-            const cfg = getTypeConfig(material.type);
+          {materials.map((m, idx) => {
+            const cfg = MATERIAL_TYPES.find(t => t.type === m.type) || MATERIAL_TYPES[0];
             const Icon = cfg.icon;
-            const isEditing = editingId === material.id;
+            const isEditing = editingId === m.id;
 
             return (
-              <div key={material.id} className="material-card">
-                {/* Card header */}
+              <div key={m.id} className="material-card">
+                <div className="material-type-badge" style={{ background: cfg.color + '15', color: cfg.color }}>
+                  <Icon style={{ width: 14 }} />
+                  <span>{cfg.label}</span>
+                </div>
+
                 <div className="material-card-header">
-                  <div className="material-type-badge" style={{ background: cfg.color + '18', color: cfg.color }}>
-                    <Icon className="type-icon" />
-                    <span>{cfg.label}</span>
-                  </div>
                   <div className="material-actions">
+                    <button className="icon-btn" onClick={() => moveMaterial(idx, 'up')} disabled={idx === 0}>
+                      <ArrowUpIcon />
+                    </button>
+                    <button className="icon-btn" onClick={() => moveMaterial(idx, 'down')} disabled={idx === materials.length - 1}>
+                      <ArrowDownIcon />
+                    </button>
                     {isEditing ? (
-                      <button className="icon-btn green" onClick={() => saveMaterial(material.id, material.type)}>
-                        <CheckIcon className="icon-sm" />
-                      </button>
+                      <>
+                        <button className="icon-btn red-cancel" onClick={() => {
+                          setEditingId(null);
+                          setEditingContent('');
+                          setEditingTitle('');
+                          setEditingDescription('');
+                          setEditingData({ questions: [] });
+                          setEditingFile(null);
+                        }} title="Болдырмау">
+                          <XMarkIcon />
+                        </button>
+                        <button className="icon-btn green" onClick={() => saveMaterial(m.id, m.type)} title="Сақтау">
+                          <CheckIcon />
+                        </button>
+                      </>
                     ) : (
-                      <button
-                        className="icon-btn"
-                        onClick={() => {
-                          setEditingId(material.id);
-                          setEditingContent(material.content);
-                        }}
-                      >
-                        <PencilIcon className="icon-sm" />
+                      <button className="icon-btn" onClick={() => {
+                        setEditingId(m.id);
+                        setEditingContent(m.content || '');
+                        setEditingTitle(m.title || '');
+                        setEditingDescription(m.description || '');
+                        setEditingData(m.data && m.data.questions ? m.data : { questions: [] });
+                        setEditingFile(null);
+                      }}>
+                        <PencilIcon />
                       </button>
                     )}
-                    <button className="icon-btn red" onClick={() => deleteMaterial(material.id)}>
-                      <TrashIcon className="icon-sm" />
+                    <button className="icon-btn red" onClick={() => deleteMaterial(m.id)}>
+                      <TrashIcon />
                     </button>
                   </div>
                 </div>
 
-                {/* Card body */}
                 <div className="material-card-body">
+                  {isEditing && (
+                    <div className="common-edit-fields">
+                      <input
+                        className="material-title-input"
+                        placeholder="Атауы (міндетті емес)"
+                        value={editingTitle}
+                        onChange={e => setEditingTitle(e.target.value)}
+                      />
+                      <textarea
+                        className="material-desc-input"
+                        placeholder="Сипаттамасы / Нұсқаулық..."
+                        value={editingDescription}
+                        onChange={e => setEditingDescription(e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                  )}
+
                   {isEditing ? (
-                    /* Editing state */
-                    material.type === 'TEXT' ? (
+                    m.type === 'TEXT' ? (
                       <textarea
                         className="material-textarea"
                         value={editingContent}
                         onChange={e => setEditingContent(e.target.value)}
                         autoFocus
-                        rows={6}
-                        placeholder="Мәтінді енгізіңіз..."
+                        rows={5}
                       />
-                    ) : material.type === 'GAME' ? (
-                      <div className="game-picker">
-                        <p className="game-picker-label">Ойын түрін таңдаңыз:</p>
-                        {['fast-calc', 'true-false', 'bomb', 'sequence', 'roulette'].map(g => (
-                          <button
-                            key={g}
-                            className={`game-option${editingContent === g ? ' selected' : ''}`}
-                            onClick={() => setEditingContent(g)}
-                          >
-                            {g}
-                          </button>
-                        ))}
+                    ) : (m.type === 'GAME' || m.type === 'TEST') ? (
+                      <div className="game-editor-container">
+                        {/* ТЕСТ болса ойын таңдаудың қажеті жоқ, тікелей сұрақтарға көшеміз */}
+                        {(!editingContent && m.type === 'GAME') ? (
+                          <div className="game-picker">
+                            <span className="game-picker-label">Математикалық ойынды таңдаңыз:</span>
+                            <div className="game-picker-grid">
+                              {[
+                                { id: 'fast-calc', name: 'Жылдам есеп', desc: 'Уақытқа есептеу' },
+                                { id: 'true-false', name: 'Шын/Өтірік', desc: 'Логикалық таңдау' },
+                                { id: 'bomb', name: 'Бомба', desc: 'Қателесуге болмайды' },
+                                { id: 'sequence', name: 'Тізбек', desc: 'Сандар ретін тап' },
+                                { id: 'roulette', name: 'Рулетка', desc: 'Кездейсоқ сұрақтар' }
+                              ].map(g => (
+                                <button
+                                  key={g.id}
+                                  className={`game-option ${editingContent === g.id ? 'selected' : ''}`}
+                                  onClick={() => setEditingContent(g.id)}
+                                >
+                                  <PuzzlePieceIcon style={{ width: 24, marginBottom: 8, color: editingContent === g.id ? 'white' : 'var(--primary)' }} />
+                                  <div className="game-option-info">
+                                    <strong>{g.name}</strong>
+                                    <span>{g.desc}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          /* ТЕСТ немесе ойын түрі таңдалған соң */
+                          <div className="questions-editor">
+                            <div className="questions-editor-header">
+                              <h3>{m.type === 'TEST' ? 'Тест сұрақтары' : `${editingContent.toUpperCase()}: Сұрақтар`}</h3>
+                              {m.type === 'GAME' && (
+                                <div className="gen-box">
+                                  <input type="number" defaultValue={5} id={`count-${m.id}`} style={{ width: 50, padding: '4px 8px', borderRadius: 8, border: '1px solid #ddd' }} />
+                                  <button className="gen-btn" onClick={() => {
+                                    const count = parseInt(document.getElementById(`count-${m.id}`).value) || 5;
+                                    const newQuestions = generateRandomQuestions(editingContent, count);
+                                    setEditingData({ 
+                                      ...editingData, 
+                                      questions: [...(editingData.questions || []), ...newQuestions] 
+                                    });
+                                  }}>+ Сұрақ генерациялау</button>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="questions-list-edit">
+                              {(editingData.questions || []).map((q, qIdx) => renderQuestionInputs(q, qIdx))}
+                              <button className="add-q-row-btn" onClick={() => {
+                                setEditingData({ ...editingData, questions: [...(editingData.questions || []), { q: '', a: '', w1: '', w2: '', w3: '', explanation: '' }] });
+                              }}>+ Сұрақ қосу</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    ) : material.type === 'FILE' ? (
-                      <input
-                        type="file"
-                        className="material-input"
-                        onChange={e => setEditingFile(e.target.files[0])}
-                      />
                     ) : (
-                      <input
-                        className="material-input"
-                        value={editingContent}
-                        onChange={e => setEditingContent(e.target.value)}
-                        autoFocus
-                        placeholder={'YouTube URL...'}
-                      />
+                      <div className="non-text-editor">
+                        <input
+                          className="material-input"
+                          value={editingContent}
+                          onChange={e => setEditingContent(e.target.value)}
+                          placeholder={m.type === 'VIDEO' ? 'YouTube сілтемесін (URL) қойыңыз...' : 'Сілтеме немесе Загрузка (төменде)...'}
+                        />
+                        {m.type === 'FILE' && (
+                          <div className="file-upload-box">
+                            <label className="upload-btn">
+                              <ArrowUpTrayIcon style={{ width: 18 }} />
+                              {editingFile ? editingFile.name : 'Файлды жүктеу (загрузка)'}
+                              <input type="file" onChange={handleFileUpload} style={{ display: 'none' }} />
+                            </label>
+                          </div>
+                        )}
+                      </div>
                     )
                   ) : (
-                    /* Preview state */
-                    material.type === 'TEXT' ? (
-                      <p className="material-text-preview">{material.content}</p>
-                    ) : material.type === 'VIDEO' ? (
-                      getYouTubeId(material.content) ? (
-                        <div className="video-wrapper">
-                          <iframe
-                            src={`https://www.youtube.com/embed/${getYouTubeId(material.content)}`}
-                            title="YouTube video"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
+                    <div className="material-preview-content">
+                      {m.title && <h3 className="preview-title">{m.title}</h3>}
+                      {m.description && <p className="preview-desc">{m.description}</p>}
+
+                      {m.type === 'TEXT' ? (
+                        <p className="material-text-preview">{m.content}</p>
+                      ) : m.type === 'VIDEO' ? (
+                        getYouTubeId(m.content) ? (
+                          <div className="video-wrapper">
+                            <iframe src={`https://www.youtube.com/embed/${getYouTubeId(m.content)}`} allowFullScreen />
+                          </div>
+                        ) : <p className="material-url-preview">{m.content || 'Видео сілтемесі жоқ'}</p>
+                      ) : m.type === 'GAME' ? (
+                        <div className="game-preview">
+                          <PuzzlePieceIcon className="game-preview-icon" />
+                          <span>Ойын: <strong>{m.content}</strong></span>
                         </div>
                       ) : (
-                        <p className="material-url-preview">{material.content}</p>
-                      )
-                    ) : material.type === 'GAME' ? (
-                      <div className="game-preview">
-                        <PuzzlePieceIcon className="game-preview-icon" />
-                        <span>Ойын: <strong>{material.content}</strong></span>
-                      </div>
-                    ) : material.type === 'FILE' && material.file_upload ? (
-                      <a href={material.file_upload} target="_blank" rel="noopener noreferrer" className="material-url-preview">
-                        Жүктелген файл: {material.content}
-                      </a>
-                    ) : (
-                      <p className="material-url-preview">{material.content || 'Файл жүктелмеген'}</p>
-                    )
+                        <a href={m.file_upload} target="_blank" rel="noreferrer" className="material-url-preview">
+                          📎 {m.content || 'Файл'}
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
             );
           })}
 
-          {/* Add material button */}
           <div className="add-material-area">
             {showTypePicker ? (
               <div className="type-picker">
-                <p className="type-picker-label">Материал түрін таңдаңыз:</p>
+                <p className="type-picker-label">Мазмұн қосу</p>
                 <div className="type-picker-grid">
                   {MATERIAL_TYPES.map(t => {
                     const Icon = t.icon;
                     return (
-                      <button
-                        key={t.type}
-                        className="type-option"
-                        style={{ '--accent': t.color }}
-                        onClick={() => addMaterial(t.type)}
-                      >
+                      <button key={t.type} className="type-option" style={{ '--accent': t.color }} onClick={() => addMaterial(t.type)}>
                         <Icon className="type-option-icon" />
                         <span>{t.label}</span>
                       </button>
                     );
                   })}
                 </div>
-                <button className="cancel-btn" onClick={() => setShowTypePicker(false)}>
-                  Болдырмау
-                </button>
+                <button className="cancel-btn" onClick={() => setShowTypePicker(false)}>Болдырмау</button>
               </div>
             ) : (
               <button className="add-material-btn" onClick={() => setShowTypePicker(true)}>
-                <PlusIcon className="btn-icon" />
-                Материал қосу
+                <PlusIcon style={{ width: 20 }} />
+                Жаңа блок қосу
               </button>
             )}
           </div>

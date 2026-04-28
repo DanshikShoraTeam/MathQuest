@@ -1,0 +1,55 @@
+/* ── SHARED STUDENT LAYOUT (APP STYLE) ── */
+.student-app-container {
+  background: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-body {
+  flex: 1;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  min-height: 100vh;
+  padding-bottom: 90px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.03);
+}
+
+.global-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  height: 75px;
+  background: white;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 10px 10px 10px;
+  z-index: 1000;
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+}
+
+.nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #afafaf;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.nav-tab.active { color: #1cb0f6; }
+.nav-tab svg { width: 26px; height: 26px; }
+.nav-tab span { font-size: 0.65rem; font-weight: 800; }
+
+@media (max-width: 500px) {
+  .app-body, .global-bottom-nav { max-width: 100%; }
+}

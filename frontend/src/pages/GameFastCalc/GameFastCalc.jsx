@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   XMarkIcon, 
   ClockIcon, 
@@ -8,20 +9,52 @@ import {
 import './GameFastCalc.css';
 
 const GameFastCalc = () => {
-  const [timeLeft, setTimeLeft] = useState(15);
-  const [currentQuestion, setCurrentQuestion] = useState({ q: '12 + 8 = ?', a: 20, options: [18, 20, 22, 25] });
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleExit = () => {
+    if (location.state?.fromLessonId) {
+      navigate(`/student/lesson/${location.state.fromLessonId}`, { 
+        state: { activeStep: location.state.activeStep },
+        replace: true
+      });
+    } else {
+      navigate(-1);
+    }
+  };
+  const [timeLeft, setTimeLeft] = useState(30); // Уақытты көбейттім
+  const questions = location.state?.questions || [];
+  const [qIdx, setQIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+
+  const getInitialQuestion = () => {
+    if (questions.length > 0) {
+      const q = questions[0];
+      return { q: q.q, a: q.a, options: [q.a, q.w1, q.w2, q.w3].sort(() => Math.random() - 0.5) };
+    }
+    return { q: '12 + 8 = ?', a: '20', options: ['18', '20', '22', '25'].sort(() => Math.random() - 0.5) };
+  };
+
+  const [currentQuestion, setCurrentQuestion] = useState(getInitialQuestion());
 
   useEffect(() => {
     if (timeLeft > 0 && !isGameOver) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && !isGameOver) {
       setIsGameOver(true);
     }
   }, [timeLeft, isGameOver]);
+
+  useEffect(() => {
+    if (isGameOver && score > 0) {
+      import('../../api').then(({ default: api }) => {
+        api.post('users/add_xp/', { points: score }).catch(err => console.error(err));
+      });
+    }
+  }, [isGameOver, score]);
 
   const handleAnswer = (option) => {
     if (isGameOver) return;
@@ -29,20 +62,29 @@ const GameFastCalc = () => {
     
     if (option === currentQuestion.a) {
       setScore(score + 10);
-      // Generate next question (simple logic for now)
       setTimeout(() => {
-        const num1 = Math.floor(Math.random() * 20);
-        const num2 = Math.floor(Math.random() * 20);
-        const ans = num1 + num2;
-        setCurrentQuestion({
-          q: `${num1} + ${num2} = ?`,
-          a: ans,
-          options: [ans - 2, ans, ans + 2, ans + 5].sort(() => Math.random() - 0.5)
-        });
+        const nextIdx = qIdx + 1;
+        if (questions.length > 0 && nextIdx < questions.length) {
+          const q = questions[nextIdx];
+          setCurrentQuestion({ q: q.q, a: q.a, options: [q.a, q.w1, q.w2, q.w3].sort(() => Math.random() - 0.5) });
+          setQIdx(nextIdx);
+        } else if (questions.length === 0) {
+          // Кездейсоқ генерация (егер мұғалім сұрақ жазбаса)
+          const n1 = Math.floor(Math.random() * 20);
+          const n2 = Math.floor(Math.random() * 20);
+          const ans = (n1 + n2).toString();
+          setCurrentQuestion({
+            q: `${n1} + ${n2} = ?`,
+            a: ans,
+            options: [ans, (n1+n2+2).toString(), (n1+n2-2).toString(), (n1+n2+5).toString()].sort(() => Math.random() - 0.5)
+          });
+        } else {
+          // Сұрақтар бітті
+          setIsGameOver(true);
+        }
         setSelectedOption(null);
       }, 500);
     } else {
-      // Wrong answer
       setTimeout(() => setIsGameOver(true), 500);
     }
   };
@@ -51,7 +93,7 @@ const GameFastCalc = () => {
     <div className="game-container">
       {/* GAME HEADER */}
       <header className="game-header">
-        <button className="close-btn"><XMarkIcon /></button>
+        <button className="close-btn" onClick={handleExit}><XMarkIcon /></button>
         <div className="game-progress-bar">
           <div className="progress-fill" style={{ width: `${(timeLeft / 15) * 100}%` }}></div>
         </div>
@@ -96,7 +138,7 @@ const GameFastCalc = () => {
               <h3>{score}</h3>
             </div>
             <button className="restart-btn" onClick={() => window.location.reload()}>Қайталау</button>
-            <button className="exit-btn">Шығу</button>
+            <button className="exit-btn" onClick={handleExit}>Шығу</button>
           </div>
         </div>
       )}

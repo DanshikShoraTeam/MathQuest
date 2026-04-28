@@ -5,8 +5,10 @@ class User(AbstractUser):
     ROLE_CHOICES = (
         ('TEACHER', 'Мұғалім'),
         ('STUDENT', 'Оқушы'),
+        ('ADMIN', 'Админ'),
     )
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='STUDENT')
+    xp = models.PositiveIntegerField(default=0, help_text="Оқушының жинаған ұпайы")
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
@@ -15,6 +17,8 @@ class Course(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught')
+    students = models.ManyToManyField(User, related_name='enrolled_courses', blank=True)
+    is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -47,12 +51,17 @@ class Material(models.Model):
         ('TEXT', 'Мәтін'),
         ('VIDEO', 'Видео'),
         ('FILE', 'Файл'),
-        ('GAME', 'Ойын'),
+        ('GAME', 'Ойын (Optional)'),
+        ('TEST', 'Тест (Mandatory)'),
     )
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='materials')
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='materials', null=True, blank=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='thematic_tests', null=True, blank=True, help_text="Тақырыптық тест үшін")
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    content = models.TextField(blank=True, help_text="Мәтін мазмұны немесе видео/файл сілтемесі")
-    file_upload = models.FileField(upload_to='materials/', null=True, blank=True, help_text="Жүктелген файл (тек FILE типі үшін)")
+    title = models.CharField(max_length=255, blank=True, null=True, help_text="Материал атауы")
+    description = models.TextField(blank=True, null=True, help_text="Материал сипаттамасы")
+    content = models.TextField(blank=True, help_text="Мәтін мазмұны / Видео сілтемесі / Ойын-Тест түрі")
+    file_upload = models.FileField(upload_to='materials/', null=True, blank=True)
+    data = models.JSONField(default=dict, blank=True, help_text="Сұрақтар мен түсіндірмелер (JSON)")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -60,3 +69,16 @@ class Material(models.Model):
 
     def __str__(self):
         return f"{self.lesson.title} - {self.get_type_display()}"
+
+from django.conf import settings
+
+class LessonCompletion(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='completed_lessons')
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='completions')
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
+
+    def __str__(self):
+        return f"{self.user.username} completed {self.lesson.title}"

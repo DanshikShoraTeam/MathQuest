@@ -1,0 +1,121 @@
+.roulette-bg {
+  background-color: #ffe8b3; /* Light orange/yellow */
+}
+
+.roulette-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 50px;
+}
+
+.roulette-title {
+  text-align: center;
+}
+
+.roulette-title h2 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+
+.roulette-title p {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.equation-display {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 30px;
+  border: 4px solid #ff9600;
+  box-shadow: 0 8px 0 #ff9600;
+}
+
+.eq-num, .eq-ans, .eq-equals {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.eq-equals {
+  color: var(--text-muted);
+}
+
+.eq-op-box {
+  width: 70px;
+  height: 70px;
+  background: #f0f0f0;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ff9600;
+  border: 3px dashed #ff9600;
+}
+
+.eq-op-box.spinning {
+  animation: fastSpin 0.5s infinite linear;
+  background: #ff9600;
+  color: #fff;
+  border-style: solid;
+}
+
+@keyframes fastSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.roulette-controls {
+  display: flex;
+  gap: 20px;
+}
+
+.roulette-btn {
+  width: 80px;
+  height: 80px;
+  background: #fff;
+  border: 3px solid var(--border-light);
+  border-radius: 24px;
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--border-light);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roulette-btn:hover:not(:disabled) {
+  border-color: #ff9600;
+  color: #ff9600;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #ff9600;
+}
+
+.roulette-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 transparent;
+}
+
+.roulette-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
