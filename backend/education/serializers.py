@@ -30,10 +30,11 @@ class MaterialSerializer(serializers.ModelSerializer):
 class LessonSerializer(serializers.ModelSerializer):
     materials = MaterialSerializer(many=True, read_only=True)
     is_completed = serializers.SerializerMethodField()
-    
+    course_id = serializers.IntegerField(source='section.course_id', read_only=True)
+
     class Meta:
         model = Lesson
-        fields = ('id', 'section', 'title', 'order', 'materials', 'is_completed')
+        fields = ('id', 'section', 'title', 'order', 'materials', 'is_completed', 'course_id')
 
     def get_is_completed(self, obj):
         request = self.context.get('request')

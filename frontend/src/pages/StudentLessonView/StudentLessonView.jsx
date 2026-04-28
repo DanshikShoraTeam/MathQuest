@@ -11,8 +11,15 @@ import {
   DocumentIcon,
   LinkIcon,
   CheckBadgeIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/solid';
+
+const getYouTubeId = (url) => {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+};
 import api from '../../api';
 import confetti from 'canvas-confetti';
 import './StudentLessonView.css';
@@ -78,7 +85,7 @@ const StudentLessonView = () => {
       });
       await api.post(`lessons/${lessonId}/complete/`);
       setTimeout(() => {
-        const courseId = lesson?.section?.course || lesson?.course_id;
+        const courseId = lesson?.course_id;
         navigate(courseId ? `/student/course/${courseId}` : '/student/courses');
       }, 1500);
     } catch (err) {
