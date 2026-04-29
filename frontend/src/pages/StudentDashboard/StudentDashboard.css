@@ -1,92 +1,148 @@
-/* ── STUDENT DASHBOARD SPECIFIC STYLES ── */
+/* ── STUDENT DASHBOARD ── */
 .student-dashboard-content {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.app-header-compact {
-  padding: 15px 20px;
-  background: white;
+/* ── CARTOON HERO BANNER ── */
+.cartoon-hero-banner {
+  position: relative;
+  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 60%, #2563EB 100%);
+  padding: 24px 20px 16px 24px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eee;
+  align-items: flex-end;
+  overflow: hidden;
+  min-height: 150px;
 }
 
-.user-info-row {
+/* Floating bubbles decoration */
+.hero-bubbles { position: absolute; inset: 0; pointer-events: none; }
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.b1 { width: 90px; height: 90px; top: -20px; left: -20px; }
+.b2 { width: 60px; height: 60px; top: 10px; left: 55%; }
+.b3 { width: 110px; height: 110px; bottom: -40px; right: -20px; background: rgba(255,255,255,0.05); }
+
+.hero-left {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1;
 }
 
-.user-avatar-small {
-  width: 38px;
-  height: 38px;
-  background: #1cb0f6;
-  color: white;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.hero-greeting {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.5px;
+}
+
+.hero-name {
+  font-size: 1.7rem;
   font-weight: 900;
-  font-size: 0.9rem;
+  color: white;
+  line-height: 1.1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.welcome-msg h3 { margin: 0; font-size: 0.95rem; font-weight: 900; color: #3c3c3c; }
-.welcome-msg p { margin: 2px 0 0 0; font-size: 0.7rem; color: #afafaf; font-weight: 700; }
-
-.header-xp-badge {
-  background: #fff5e6;
-  padding: 6px 12px;
+.hero-goal {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.18);
+  color: #FDE68A;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 5px 10px;
   border-radius: 20px;
+  margin-top: 4px;
+  width: fit-content;
+  backdrop-filter: blur(4px);
+}
+
+.hero-mascot {
+  z-index: 1;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.3));
+  margin-bottom: -6px;
+  flex-shrink: 0;
+}
+
+/* ── XP STRIP ── */
+.xp-strip {
+  background: linear-gradient(90deg, #fff9ec 0%, #fff3d0 100%);
+  border-bottom: 2px solid #fde68a;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 900;
-  font-size: 0.85rem;
-  color: #ff9600;
+  padding: 8px 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #d97706;
 }
 
+/* ── SCROLL AREA ── */
 .app-scroll-content {
   padding: 20px;
+  overflow-y: auto;
 }
 
+/* ── STATS GRID ── */
 .mobile-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 25px;
+  margin-bottom: 24px;
 }
 
 .m-stat-card {
   background: white;
-  padding: 15px;
-  border-radius: 20px;
-  border: 2px solid #e5e7eb;
+  padding: 16px 12px;
+  border-radius: 22px;
+  border: 2.5px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  box-shadow: 0 4px 0 #e5e7eb;
+  gap: 6px;
+  box-shadow: 0 5px 0 #e5e7eb;
+  transition: transform 0.15s ease;
 }
+.m-stat-card:active { transform: translateY(3px); box-shadow: 0 2px 0 #e5e7eb; }
 
-.m-icon { width: 22px; height: 22px; }
-.m-val { font-size: 1.1rem; font-weight: 900; }
-.m-lab { font-size: 0.6rem; font-weight: 800; color: #afafaf; text-transform: uppercase; }
+.m-stat-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.xp-icon   { background: #fff5e6; }
+.level-icon { background: #f0fdf4; }
+.streak-icon{ background: #fff1f2; }
+.rank-icon  { background: #eff6ff; }
 
-.m-stat-card.xp { color: #ff9600; }
-.m-stat-card.level { color: #58cc02; }
-.m-stat-card.streak { color: #ff4b4b; }
-.m-stat-card.rank { color: #1cb0f6; }
+.m-icon { width: 20px; height: 20px; }
+.m-val  { font-size: 1.15rem; font-weight: 900; }
+.m-lab  { font-size: 0.58rem; font-weight: 800; color: #afafaf; text-transform: uppercase; letter-spacing: 0.5px; }
 
+.m-stat-card.xp    { color: #ff9600; border-color: #fde68a; box-shadow: 0 5px 0 #fde68a; }
+.m-stat-card.level { color: #16a34a; border-color: #bbf7d0; box-shadow: 0 5px 0 #bbf7d0; }
+.m-stat-card.streak{ color: #ef4444; border-color: #fecaca; box-shadow: 0 5px 0 #fecaca; }
+.m-stat-card.rank  { color: #2563eb; border-color: #bfdbfe; box-shadow: 0 5px 0 #bfdbfe; }
+
+/* ── COURSE SECTION ── */
 .app-section {
   background: white;
   border-radius: 24px;
   padding: 20px;
-  border: 2px solid #e5e7eb;
+  border: 2.5px solid #e5e7eb;
   margin-bottom: 20px;
-  box-shadow: 0 4px 0 #e5e7eb;
+  box-shadow: 0 5px 0 #e5e7eb;
 }
 
 .section-header {
@@ -95,7 +151,6 @@
   align-items: center;
   margin-bottom: 15px;
 }
-
 .section-header h3 { font-size: 0.95rem; font-weight: 900; margin: 0; color: #3c3c3c; }
 
 .mini-course-list {
@@ -108,32 +163,42 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px;
+  padding: 12px;
   background: #f8fafc;
-  border-radius: 14px;
-  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  border: 2px solid #eef2f6;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+.mini-course-item:hover {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.1);
 }
 
 .mini-course-icon {
-  width: 40px;
-  height: 40px;
-  background: #1cb0f6;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
   color: white;
-  border-radius: 10px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(124,58,237,0.35);
 }
 
-.mini-course-info { flex: 1; }
-.mini-course-info h4 { margin: 0 0 4px 0; font-size: 0.8rem; font-weight: 800; }
+.mini-course-info { flex: 1; min-width: 0; }
+.mini-course-info h4 { margin: 0 0 5px 0; font-size: 0.82rem; font-weight: 800; color: #1e293b; }
 
-.mini-progress-bar { height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+.mini-progress-bar { height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
 .mini-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #58cc02 0%, #a5ed6e 100%);
+  background: linear-gradient(90deg, #7C3AED 0%, #58cc02 100%);
   border-radius: 6px;
   transition: width 0.5s ease-out;
 }
@@ -141,7 +206,7 @@
 .mini-progress-text {
   font-size: 11px;
   font-weight: 700;
-  color: #58cc02;
+  color: #7C3AED;
   margin-top: 4px;
   display: block;
 }

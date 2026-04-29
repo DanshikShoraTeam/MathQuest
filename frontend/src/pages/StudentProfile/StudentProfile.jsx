@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  UserIcon, 
-  BoltIcon, 
+import {
+  BoltIcon,
   ArrowRightOnRectangleIcon,
-  AcademicCapIcon
+  AcademicCapIcon,
+  StarIcon,
+  FireIcon
 } from '@heroicons/react/24/solid';
 import api from '../../api';
 import StudentLayout from '../../components/StudentLayout/StudentLayout';
@@ -16,9 +17,7 @@ const StudentProfile = () => {
   const [coursesCount, setCoursesCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
+  useEffect(() => { fetchProfileData(); }, []);
 
   const fetchProfileData = async () => {
     try {
@@ -42,41 +41,83 @@ const StudentProfile = () => {
 
   if (loading) return <div className="loading-spinner">Жүктелуде...</div>;
 
+  const level = Math.floor((user?.xp || 0) / 100) + 1;
+
   return (
     <StudentLayout>
       <div className="profile-page">
-        <header className="app-header-compact">
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 900, margin: 0 }}>Профиль</h2>
-          <UserIcon style={{ width: 22, color: '#1cb0f6' }} />
-        </header>
+        {/* Banner */}
+        <div className="profile-hero-banner">
+          <div className="profile-bubbles">
+            <div className="pb pb1"/><div className="pb pb2"/><div className="pb pb3"/>
+          </div>
+          <div className="profile-banner-inner">
+            <div className="profile-avatar-large">
+              {user?.username?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <div className="profile-banner-info">
+              <div className="profile-banner-name">{user?.username}</div>
+              <div className="profile-banner-email">{user?.email}</div>
+              <div className="profile-level-badge">
+                <StarIcon style={{ width: 12 }} />
+                {level}-деңгей
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="app-scroll-content">
-          <div className="profile-hero-app">
-            <div className="profile-avatar-large">
-              {user?.username?.[0] || 'U'}
-            </div>
-            <h3>{user?.username}</h3>
-            <p>{user?.email}</p>
-          </div>
-
+          {/* Stats */}
           <div className="profile-stats-grid-large">
-            <div className="p-stat-large">
-              <BoltIcon style={{ width: 32, color: '#ff9600' }} />
-              <strong>{user?.xp}</strong>
+            <div className="p-stat-large xp-stat">
+              <div className="p-stat-icon-wrap" style={{ background: '#FFF5E6' }}>
+                <BoltIcon style={{ width: 26, color: '#ff9600' }} />
+              </div>
+              <strong>{user?.xp || 0}</strong>
               <span>XP Жинады</span>
             </div>
-            <div className="p-stat-large">
-              <AcademicCapIcon style={{ width: 32, color: '#1cb0f6' }} />
+            <div className="p-stat-large level-stat">
+              <div className="p-stat-icon-wrap" style={{ background: '#F0FDF4' }}>
+                <StarIcon style={{ width: 26, color: '#16a34a' }} />
+              </div>
+              <strong>{level}</strong>
+              <span>Деңгей</span>
+            </div>
+            <div className="p-stat-large course-stat">
+              <div className="p-stat-icon-wrap" style={{ background: '#EFF6FF' }}>
+                <AcademicCapIcon style={{ width: 26, color: '#2563eb' }} />
+              </div>
               <strong>{coursesCount}</strong>
               <span>Курстар</span>
             </div>
+            <div className="p-stat-large streak-stat">
+              <div className="p-stat-icon-wrap" style={{ background: '#FFF1F2' }}>
+                <FireIcon style={{ width: 26, color: '#ef4444' }} />
+              </div>
+              <strong>3</strong>
+              <span>Күн қатар</span>
+            </div>
           </div>
 
+          {/* XP progress to next level */}
+          <div className="xp-progress-card">
+            <div className="xp-progress-header">
+              <span>Келесі деңгейге дейін</span>
+              <span>{(user?.xp || 0) % 100} / 100 XP</span>
+            </div>
+            <div className="xp-progress-bar">
+              <div className="xp-progress-fill" style={{ width: `${(user?.xp || 0) % 100}%` }}/>
+            </div>
+          </div>
+
+          {/* Menu */}
           <div className="profile-menu-list">
-             <div className="profile-menu-item logout" onClick={handleLogout}>
+            <div className="profile-menu-item logout" onClick={handleLogout}>
+              <div className="menu-item-icon-wrap">
                 <ArrowRightOnRectangleIcon style={{ width: 20 }} />
-                <span>Жүйеден шығу</span>
-             </div>
+              </div>
+              <span>Жүйеден шығу</span>
+            </div>
           </div>
         </div>
       </div>

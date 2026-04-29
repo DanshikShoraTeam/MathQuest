@@ -17,50 +17,41 @@ import GameBomb from './pages/GameBomb/GameBomb';
 import GameSequence from './pages/GameSequence/GameSequence';
 import GameRoulette from './pages/GameRoulette/GameRoulette';
 
+// Токен болмаса логинге жіберу
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('access_token');
+  return token ? children : <Navigate to="/login" replace />;
+};
+
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Перенаправление с главной страницы на страницу входа */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-
-        {/* Маршрут страницы входа */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Маршрут панели мұғалімі */}
-        <Route path="/teacher" element={<TeacherDashboard />} />
+        {/* Teacher routes */}
+        <Route path="/teacher" element={<PrivateRoute><TeacherDashboard /></PrivateRoute>} />
+        <Route path="/teacher/course/:courseId" element={<PrivateRoute><CourseEditor /></PrivateRoute>} />
+        <Route path="/teacher/lesson/:lessonId" element={<PrivateRoute><LessonEditor /></PrivateRoute>} />
 
-        {/* Маршрут редактора курса — бөлімдер мен сабақтарды басқару */}
-        <Route path="/teacher/course/:courseId" element={<CourseEditor />} />
+        {/* Student routes */}
+        <Route path="/student" element={<PrivateRoute><StudentDashboard /></PrivateRoute>} />
+        <Route path="/student/courses" element={<PrivateRoute><StudentCourses /></PrivateRoute>} />
+        <Route path="/student/league" element={<PrivateRoute><StudentLeague /></PrivateRoute>} />
+        <Route path="/student/profile" element={<PrivateRoute><StudentProfile /></PrivateRoute>} />
+        <Route path="/student/course/:courseId" element={<PrivateRoute><CoursePath /></PrivateRoute>} />
+        <Route path="/student/lesson/:lessonId" element={<PrivateRoute><StudentLessonView /></PrivateRoute>} />
 
-        {/* Маршрут редактора сабақ — материалдарды басқару */}
-        <Route path="/teacher/lesson/:lessonId" element={<LessonEditor />} />
+        <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
 
-        {/* Маршрут оқушының панелі */}
-        <Route path="/student" element={<StudentDashboard />} />
+        {/* Game routes */}
+        <Route path="/game/fast-calc" element={<PrivateRoute><GameFastCalc /></PrivateRoute>} />
+        <Route path="/game/true-false" element={<PrivateRoute><GameTrueFalse /></PrivateRoute>} />
+        <Route path="/game/bomb" element={<PrivateRoute><GameBomb /></PrivateRoute>} />
+        <Route path="/game/sequence" element={<PrivateRoute><GameSequence /></PrivateRoute>} />
+        <Route path="/game/roulette" element={<PrivateRoute><GameRoulette /></PrivateRoute>} />
 
-        {/* Маршрут оқушының курстары */}
-        <Route path="/student/courses" element={<StudentCourses />} />
-        
-        {/* Маршрут оқушының лигалары мен профилі */}
-        <Route path="/student/league" element={<StudentLeague />} />
-        <Route path="/student/profile" element={<StudentProfile />} />
-
-        {/* Маршрут траекториясы (Duolingo style) */}
-        <Route path="/student/course/:courseId" element={<CoursePath />} />
-
-        {/* Маршрут оқушының сабақты көруі (Материалдар) */}
-        <Route path="/student/lesson/:lessonId" element={<StudentLessonView />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-
-        {/* Маршрут ойыны: Жылдам есеп */}
-        <Route path="/game/fast-calc" element={<GameFastCalc />} />
-        <Route path="/game/true-false" element={<GameTrueFalse />} />
-        <Route path="/game/bomb" element={<GameBomb />} />
-        <Route path="/game/sequence" element={<GameSequence />} />
-        <Route path="/game/roulette" element={<GameRoulette />} />
-
-        {/* Резервный маршрут для обработки несуществующих путей */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>

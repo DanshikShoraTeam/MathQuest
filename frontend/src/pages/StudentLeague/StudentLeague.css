@@ -1,57 +1,139 @@
+/* ── STUDENT LEAGUE ── */
 .league-page {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.league-hero {
-  text-align: center;
-  padding: 30px 20px;
-  background: white;
-  border-radius: 24px;
-  border: 2px solid #e5e7eb;
-  margin-bottom: 25px;
-  box-shadow: 0 4px 0 #e5e7eb;
+/* Banner */
+.league-hero-banner {
+  position: relative;
+  background: linear-gradient(135deg, #DC2626 0%, #EF4444 55%, #F97316 100%);
+  padding: 24px 20px 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  overflow: hidden;
+  min-height: 145px;
 }
 
-.fire-glow {
-  width: 100px;
-  height: 100px;
-  background: #fff0f0;
-  border-radius: 50%;
+.league-bubbles { position: absolute; inset: 0; pointer-events: none; }
+.lb { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.1); }
+.lb1 { width: 80px; height: 80px; top: -20px; left: -15px; }
+.lb2 { width: 50px; height: 50px; top: 10px; left: 55%; }
+.lb3 { width: 110px; height: 110px; bottom: -40px; right: -15px; background: rgba(255,255,255,0.06); }
+
+.league-hero-left { display: flex; flex-direction: column; gap: 4px; z-index: 1; }
+.league-hero-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.75); }
+.league-hero-title { font-size: 1.6rem; font-weight: 900; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+.my-rank-badge {
+  background: rgba(255,255,255,0.2);
+  color: #FEF3C7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  width: fit-content;
+  margin-top: 2px;
+  backdrop-filter: blur(4px);
+}
+
+.league-hero-mascot {
+  z-index: 1;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));
+  margin-bottom: -6px;
+  flex-shrink: 0;
+}
+
+/* My XP Strip */
+.my-xp-strip {
+  background: linear-gradient(90deg, #fff9ec, #fff3d0);
+  border-bottom: 2px solid #fde68a;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto 15px;
-  box-shadow: 0 0 30px rgba(255, 75, 75, 0.15);
+  gap: 6px;
+  padding: 8px 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #d97706;
 }
+.my-xp-strip strong { font-weight: 900; }
 
-.league-hero h3 { margin: 0; font-weight: 900; font-size: 1.1rem; }
-.league-hero p { margin: 8px 0 0 0; color: #afafaf; font-size: 0.8rem; font-weight: 700; }
+/* Scroll */
+.app-scroll-content { padding: 20px; }
 
-.full-leaderboard-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+/* Leaderboard */
+.full-leaderboard-list { display: flex; flex-direction: column; gap: 8px; }
 
 .leader-row-app {
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 15px 20px;
+  gap: 12px;
+  padding: 12px 16px;
   background: white;
-  border-radius: 20px;
-  border: 1px solid #eef2f6;
+  border-radius: 18px;
+  border: 2px solid #f1f5f9;
+  box-shadow: 0 3px 0 #f1f5f9;
+  transition: all 0.15s ease;
 }
+.leader-row-app:hover { transform: translateY(-1px); }
+
+.leader-row-app.top-1 { border-color: #FDE68A; background: linear-gradient(135deg, #FFFBEB, #FEF9C3); box-shadow: 0 3px 0 #FDE68A; }
+.leader-row-app.top-2 { border-color: #E2E8F0; background: linear-gradient(135deg, #F8FAFC, #F1F5F9); box-shadow: 0 3px 0 #E2E8F0; }
+.leader-row-app.top-3 { border-color: #FED7AA; background: linear-gradient(135deg, #FFF7ED, #FFEDD5); box-shadow: 0 3px 0 #FED7AA; }
 
 .leader-row-app.is-me {
-  background: #f0f9ff;
-  border-color: #1cb0f6;
-  border-width: 2px;
+  border-color: #7C3AED !important;
+  background: linear-gradient(135deg, #F5F3FF, #EDE9FE) !important;
+  box-shadow: 0 3px 0 #C4B5FD !important;
 }
 
-.leader-rank { width: 24px; font-weight: 900; color: #afafaf; font-size: 0.9rem; }
-.leader-pfp { width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.85rem; }
-.leader-name { flex: 1; font-weight: 800; font-size: 0.95rem; }
-.leader-xp-val { font-weight: 900; color: #ff9600; font-size: 0.9rem; }
+.leader-rank { width: 32px; text-align: center; flex-shrink: 0; }
+.medal { font-size: 1.4rem; }
+.rank-num { font-weight: 900; color: #afafaf; font-size: 0.9rem; }
+
+.leader-pfp {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.9rem;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.leader-name {
+  flex: 1;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.me-tag {
+  background: #7C3AED;
+  color: white;
+  font-size: 0.55rem;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leader-xp-val {
+  font-weight: 900;
+  color: #ff9600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
