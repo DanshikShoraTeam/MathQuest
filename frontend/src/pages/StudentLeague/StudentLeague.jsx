@@ -40,6 +40,10 @@ const TrophyMascot = () => (
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
+/**
+ * Страница "Лига" — таблица лидеров по XP среди всех учеников.
+ * Подсвечивает позицию текущего пользователя.
+ */
 const StudentLeague = () => {
   const [topUsers, setTopUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -47,6 +51,10 @@ const StudentLeague = () => {
 
   useEffect(() => { fetchLeagueData(); }, []);
 
+  /**
+   * Загружает данные текущего пользователя и список всех учеников (для рейтинга).
+   * Сортирует по убыванию XP.
+   */
   const fetchLeagueData = async () => {
     try {
       const [usersRes, meRes] = await Promise.all([

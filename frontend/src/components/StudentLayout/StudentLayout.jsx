@@ -8,10 +8,20 @@ import {
 } from '@heroicons/react/24/solid';
 import './StudentLayout.css';
 
+/**
+ * Обёртка для страниц ученика.
+ * Отображает нижнюю навигационную панель с вкладками: Главная, Курсы, Лига, Профиль.
+ * @param {React.ReactNode} children - содержимое страницы
+ */
 const StudentLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  /**
+   * Проверяет, является ли указанный путь активным для подсветки вкладки.
+   * @param {string} path - URL путь вкладки
+   * @returns {boolean}
+   */
   const isActive = (path) => {
     if (path === '/student' && location.pathname === '/student') return true;
     if (path === '/student/courses' && location.pathname.startsWith('/student/courses')) return true;

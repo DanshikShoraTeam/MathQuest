@@ -1,0 +1,159 @@
+.text-task-bg {
+  background: linear-gradient(135deg, #f3f0ff 0%, #ede9fe 100%);
+}
+
+.text-task-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 24px;
+  overflow-y: auto;
+  max-width: 580px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Карточка с условием задачи */
+.text-task-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  border: 3px solid #c4b5fd;
+  box-shadow: 0 6px 0 #c4b5fd;
+}
+
+.text-task-badge {
+  display: inline-block;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  margin-bottom: 14px;
+}
+
+.text-task-question {
+  color: #1e1b4b;
+  font-weight: 700;
+  line-height: 1.6;
+  margin: 0;
+  transition: font-size 0.2s;
+}
+
+/* Сетка вариантов ответа */
+.text-task-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+}
+
+.text-task-opt-btn {
+  padding: 18px 12px;
+  background: #fff;
+  border: 2px solid #c4b5fd;
+  border-radius: 18px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #4c1d95;
+  box-shadow: 0 4px 0 #c4b5fd;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.text-task-opt-btn:hover:not(:disabled) {
+  background: #ede9fe;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #c4b5fd;
+}
+
+.text-task-opt-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 transparent;
+}
+
+.text-task-opt-btn.correct {
+  background: var(--success);
+  color: #fff;
+  border-color: #46a302;
+  box-shadow: 0 4px 0 #46a302;
+}
+
+.text-task-opt-btn.wrong {
+  background: var(--error);
+  color: #fff;
+  border-color: #dc2626;
+  box-shadow: 0 4px 0 #dc2626;
+}
+
+.text-task-opt-btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Блок с разбором решения */
+.text-task-steps {
+  width: 100%;
+  border-radius: 18px;
+  padding: 18px 20px;
+  animation: slideUp 0.3s ease;
+}
+
+.text-task-steps.steps-correct {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+}
+
+.text-task-steps.steps-wrong {
+  background: #fff3f3;
+  border: 2px solid #fca5a5;
+}
+
+.steps-header {
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  color: #1e1b4b;
+}
+
+.steps-list {
+  padding-left: 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.steps-list li {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.result-summary {
+  margin-bottom: 20px;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+/* Плавное появление экрана результата */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

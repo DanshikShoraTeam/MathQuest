@@ -13,14 +13,27 @@ import StudentLessonView from './pages/StudentLessonView/StudentLessonView';
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import GameFastCalc from './pages/GameFastCalc/GameFastCalc';
 import GameTrueFalse from './pages/GameTrueFalse/GameTrueFalse';
-import GameBomb from './pages/GameBomb/GameBomb';
 import GameSequence from './pages/GameSequence/GameSequence';
-import GameRoulette from './pages/GameRoulette/GameRoulette';
+import GameTextTask from './pages/GameTextTask/GameTextTask';
+import GameFillBlank from './pages/GameFillBlank/GameFillBlank';
 
-// Токен болмаса логинге жіберу
+/**
+ * Защищённый маршрут — если нет токена, перенаправляет на логин.
+ * Если токен есть, рендерит дочерние компоненты.
+ */
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('access_token');
   return token ? children : <Navigate to="/login" replace />;
+};
+
+/**
+ * Fallback-маршрут для неизвестных URL.
+ * Авторизованных пользователей отправляет на /student, остальных — на /login.
+ * Это предотвращает редирект на логин при корректной навигации в играх.
+ */
+const FallbackRoute = () => {
+  const token = localStorage.getItem('access_token');
+  return <Navigate to={token ? '/student' : '/login'} replace />;
 };
 
 function App() {
@@ -30,12 +43,12 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Teacher routes */}
+        {/* Маршруты учителя */}
         <Route path="/teacher" element={<PrivateRoute><TeacherDashboard /></PrivateRoute>} />
         <Route path="/teacher/course/:courseId" element={<PrivateRoute><CourseEditor /></PrivateRoute>} />
         <Route path="/teacher/lesson/:lessonId" element={<PrivateRoute><LessonEditor /></PrivateRoute>} />
 
-        {/* Student routes */}
+        {/* Маршруты ученика */}
         <Route path="/student" element={<PrivateRoute><StudentDashboard /></PrivateRoute>} />
         <Route path="/student/courses" element={<PrivateRoute><StudentCourses /></PrivateRoute>} />
         <Route path="/student/league" element={<PrivateRoute><StudentLeague /></PrivateRoute>} />
@@ -45,14 +58,15 @@ function App() {
 
         <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
 
-        {/* Game routes */}
+        {/* Маршруты игр */}
         <Route path="/game/fast-calc" element={<PrivateRoute><GameFastCalc /></PrivateRoute>} />
         <Route path="/game/true-false" element={<PrivateRoute><GameTrueFalse /></PrivateRoute>} />
-        <Route path="/game/bomb" element={<PrivateRoute><GameBomb /></PrivateRoute>} />
         <Route path="/game/sequence" element={<PrivateRoute><GameSequence /></PrivateRoute>} />
-        <Route path="/game/roulette" element={<PrivateRoute><GameRoulette /></PrivateRoute>} />
+        <Route path="/game/text-task" element={<PrivateRoute><GameTextTask /></PrivateRoute>} />
+        <Route path="/game/fill-blank" element={<PrivateRoute><GameFillBlank /></PrivateRoute>} />
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Все неизвестные URL — авторизованным в /student, иначе /login */}
+        <Route path="*" element={<FallbackRoute />} />
       </Routes>
     </Router>
   );

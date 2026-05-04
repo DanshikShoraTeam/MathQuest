@@ -11,6 +11,10 @@ import api from '../../api';
 import StudentLayout from '../../components/StudentLayout/StudentLayout';
 import './StudentProfile.css';
 
+/**
+ * Страница профиля ученика.
+ * Отображает имя, уровень, XP и количество курсов. Кнопка выхода.
+ */
 const StudentProfile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -19,6 +23,7 @@ const StudentProfile = () => {
 
   useEffect(() => { fetchProfileData(); }, []);
 
+  /** Загружает данные текущего пользователя и количество его курсов параллельно. */
   const fetchProfileData = async () => {
     try {
       const [meRes, coursesRes] = await Promise.all([
@@ -34,6 +39,7 @@ const StudentProfile = () => {
     }
   };
 
+  /** Очищает токены и перенаправляет на страницу входа. */
   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');

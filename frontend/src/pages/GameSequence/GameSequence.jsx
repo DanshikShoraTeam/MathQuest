@@ -1,19 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  XMarkIcon, 
+import {
+  XMarkIcon,
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/solid';
 import './GameSequence.css';
 
+/**
+ * Генерирует задачу на последовательность для 5 класса.
+ * Возвращает { sequence, missingIndex, correctAnswer, options, explanation }.
+ */
+const generateSequence5Class = () => {
+  const types = ['arithmetic', 'multiply', 'skip'];
+  const type = types[Math.floor(Math.random() * types.length)];
+
+  let seq, step, correctAnswer, explanation;
+
+  if (type === 'arithmetic') {
+    const start = Math.floor(Math.random() * 50) + 5;
+    step = Math.floor(Math.random() * 10) + 2;
+    const seqArr = [start, start + step, start + step * 2, start + step * 3, start + step * 4];
+    correctAnswer = seqArr[4];
+    seq = [...seqArr.slice(0, 4), '?'];
+    explanation = `Тізбек ${step}-ке артып жатыр. ${start} + ${step}×4 = ${correctAnswer}`;
+  } else if (type === 'multiply') {
+    const start = 2 + Math.floor(Math.random() * 3);
+    const ratio = 2 + Math.floor(Math.random() * 2);
+    const seqArr = [start, start * ratio, start * ratio ** 2, start * ratio ** 3];
+    correctAnswer = seqArr[3];
+    seq = [...seqArr.slice(0, 3), '?'];
+    explanation = `Тізбек ${ratio}-ге көбейіп жатыр. ${start} × ${ratio}³ = ${correctAnswer}`;
+  } else {
+    const start = Math.floor(Math.random() * 20) + 10;
+    step = (Math.floor(Math.random() * 3) + 2) * 5;
+    const seqArr = [start, start + step, start + step * 2, start + step * 3, start + step * 4];
+    correctAnswer = seqArr[4];
+    seq = [...seqArr.slice(0, 4), '?'];
+    explanation = `Тізбек ${step}-ке артып жатыр`;
+  }
+
+  const d1 = correctAnswer + step;
+  const d2 = correctAnswer - step;
+  const d3 = correctAnswer + (step * 2);
+  const options = [correctAnswer, d1, d2, d3].sort(() => Math.random() - 0.5).map(String);
+  return { sequence: seq, missingIndex: seq.indexOf('?'), correctAnswer: String(correctAnswer), options, explanation };
+};
+
+/**
+ * Игра "Тізбек" — найти следующее число в последовательности.
+ * При ошибке показывает правильный ответ 2 секунды, затем продолжает.
+ */
 const GameSequence = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  /** Выход из игры — в урок или назад */
   const handleExit = () => {
     if (location.state?.fromLessonId) {
-      navigate(`/student/lesson/${location.state.fromLessonId}`, { 
+      navigate(`/student/lesson/${location.state.fromLessonId}`, {
         state: { activeStep: location.state.activeStep },
         replace: true
       });
@@ -21,21 +66,22 @@ const GameSequence = () => {
       navigate(-1);
     }
   };
-  const [score, setScore] = useState(0);
-  const [questionCount, setQuestionCount] = useState(1);
-  const [isGameOver, setIsGameOver] = useState(false);
-  const [sequence, setSequence] = useState([]);
-  const [options, setOptions] = useState([]);
-  const [missingIndex, setMissingIndex] = useState(0);
 
-  // Мұғалім дайындаған сұрақтар
+  const [score, setScore] = useState(0);
+  const [qIdx, setQIdx] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [currentQ, setCurrentQ] = useState(null);
+  const [answered, setAnswered] = useState(false);
+  const [wasWrong, setWasWrong] = useState(false);
+
   const customQuestions = location.state?.questions || [];
-  const totalQuestions = customQuestions.length > 0 ? customQuestions.length : 5;
+  const totalQuestions = customQuestions.length > 0 ? customQuestions.length : 8;
 
   useEffect(() => {
-    generateSequence(1);
+    loadQuestion(0);
   }, []);
 
+  // Отправка XP по завершении
   useEffect(() => {
     if (isGameOver && score > 0) {
       import('../../api').then(({ default: api }) => {
@@ -44,69 +90,70 @@ const GameSequence = () => {
     }
   }, [isGameOver, score]);
 
-  const generateSequence = (idx) => {
-    const qIdx = (idx || questionCount) - 1;
+  /**
+   * Загружает вопрос по индексу из набора учителя или генерирует.
+   * @param {number} idx - индекс вопроса
+   */
+  const loadQuestion = (idx) => {
+    setAnswered(false);
+    setWasWrong(false);
 
-    if (customQuestions.length > 0 && customQuestions[qIdx]) {
-      const q = customQuestions[qIdx];
-      // Сұрақ "2, 4, 6, ..." форматында болуы мүмкін
-      const parts = q.q.split(/[, ]+/).map(p => p.trim()).filter(Boolean);
-      
-      let mIdx = parts.indexOf('...');
-      if (mIdx === -1) mIdx = parts.indexOf('?');
-      if (mIdx === -1) {
-        // Егер белгі болмаса, соңғысын сұрақ қыламыз
-        parts.push('...');
-        mIdx = parts.length - 1;
-      }
-
-      setSequence(parts);
-      setMissingIndex(mIdx);
-      
+    if (customQuestions.length > 0 && customQuestions[idx]) {
+      const q = customQuestions[idx];
+      const parts = q.q.split(/[,\s]+/).map(p => p.trim()).filter(Boolean);
+      let mIdx = parts.findIndex(p => p === '...' || p === '?');
+      if (mIdx === -1) { parts.push('?'); mIdx = parts.length - 1; }
       const opts = [q.a, q.w1, q.w2, q.w3].filter(Boolean).sort(() => Math.random() - 0.5);
-      setOptions(opts);
+      setCurrentQ({
+        sequence: parts,
+        missingIndex: mIdx,
+        correctAnswer: q.a,
+        options: opts,
+        explanation: q.explanation || ''
+      });
     } else {
-      // Fallback
-      const start = Math.floor(Math.random() * 20) + 1;
-      const step = Math.floor(Math.random() * 5) + 2; 
-      const seq = [start, start + step, start + step * 2, start + step * 3, '...'];
-      const ans = start + step * 4;
-      
-      setSequence(seq);
-      setMissingIndex(4);
-      setOptions([ans, ans + 2, ans - 2, ans + 5].sort(() => Math.random() - 0.5));
+      setCurrentQ(generateSequence5Class());
     }
   };
 
+  /**
+   * Обработчик выбора числа.
+   * Правильный — +15 очков, следующий вопрос через 500мс.
+   * Неправильный — показывает правильный ответ 2с, затем продолжает.
+   * @param {string} option - выбранный вариант
+   */
   const handleAnswer = (option) => {
-    if (isGameOver) return;
+    if (isGameOver || answered) return;
 
-    const qIdx = questionCount - 1;
-    const correctAnswer = customQuestions.length > 0 ? customQuestions[qIdx].a : (sequence[missingIndex] === '...' ? (parseInt(sequence[0]) + (parseInt(sequence[1])-parseInt(sequence[0]))*4).toString() : sequence[missingIndex]);
-    
-    if (String(option) === String(correctAnswer)) {
+    if (String(option) === String(currentQ.correctAnswer)) {
       setScore(prev => prev + 15);
-      
-      setTimeout(() => {
-        if (questionCount >= totalQuestions) {
-          setIsGameOver(true);
-        } else {
-          const nextCount = questionCount + 1;
-          setQuestionCount(nextCount);
-          generateSequence(nextCount);
-        }
-      }, 500);
+      setAnswered(true);
+      setTimeout(() => moveToNext(), 500);
     } else {
-      setTimeout(() => setIsGameOver(true), 500);
+      setAnswered(true);
+      setWasWrong(true);
+      setTimeout(() => moveToNext(), 2000);
+    }
+  };
+
+  /** Переход к следующему вопросу или завершение */
+  const moveToNext = () => {
+    const nextIdx = qIdx + 1;
+    if (nextIdx >= totalQuestions) {
+      setIsGameOver(true);
+    } else {
+      setQIdx(nextIdx);
+      loadQuestion(nextIdx);
     }
   };
 
   return (
     <div className="game-container seq-bg">
+      {/* Шапка */}
       <header className="game-header">
         <button className="close-btn" onClick={handleExit}><XMarkIcon /></button>
         <div className="game-progress-bar">
-          <div className="progress-fill" style={{ width: `${(questionCount / totalQuestions) * 100}%` }}></div>
+          <div className="progress-fill" style={{ width: `${((qIdx + 1) / totalQuestions) * 100}%` }}></div>
         </div>
         <div className="game-stats">
           <div className="stat-item">
@@ -116,6 +163,7 @@ const GameSequence = () => {
         </div>
       </header>
 
+      {/* Игровая область */}
       {!isGameOver ? (
         <main className="seq-main">
           <div className="seq-title">
@@ -124,30 +172,46 @@ const GameSequence = () => {
           </div>
 
           <div className="seq-blocks">
-            {sequence.map((num, idx) => (
-              <div key={idx} className={`seq-block ${idx === missingIndex ? 'missing' : ''}`}>
-                {idx === missingIndex ? '?' : num}
+            {currentQ?.sequence.map((num, idx) => (
+              <div key={idx} className={`seq-block ${idx === currentQ.missingIndex ? 'missing' : ''}`}>
+                {idx === currentQ.missingIndex ? (answered ? currentQ.correctAnswer : '?') : num}
               </div>
             ))}
           </div>
 
           <div className="seq-options">
-            {options.map((opt, idx) => (
-              <button key={idx} className="seq-option-btn" onClick={() => handleAnswer(opt)}>
-                {opt}
-              </button>
-            ))}
+            {currentQ?.options.map((opt, idx) => {
+              let cls = 'seq-option-btn';
+              if (answered) {
+                if (String(opt) === String(currentQ.correctAnswer)) cls += ' correct';
+                else cls += ' disabled';
+              }
+              return (
+                <button key={idx} className={cls} onClick={() => handleAnswer(opt)} disabled={answered}>
+                  {opt}
+                </button>
+              );
+            })}
           </div>
+
+          {/* Показ объяснения при ошибке */}
+          {wasWrong && (
+            <div className="seq-reveal-box">
+              <p>Дұрыс жауап: <strong>{currentQ.correctAnswer}</strong></p>
+              {currentQ.explanation && <p className="reveal-explanation">{currentQ.explanation}</p>}
+            </div>
+          )}
         </main>
       ) : (
-        <div className="game-over-overlay">
+        <div className="game-over-overlay fade-in">
           <div className="game-over-card">
-            {questionCount >= 5 ? <CheckCircleIcon className="over-icon success" /> : <XCircleIcon className="over-icon error" />}
+            <CheckCircleIcon className="over-icon success" />
             <h2>Ойын аяқталды!</h2>
             <div className="final-score">
               <p>Жалпы балл</p>
               <h3>{score}</h3>
             </div>
+            <p className="result-summary">{totalQuestions} сұрақтан {score / 15} дұрыс</p>
             <button className="restart-btn" onClick={() => window.location.reload()}>Қайталау</button>
             <button className="exit-btn" onClick={handleExit}>Шығу</button>
           </div>

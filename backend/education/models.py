@@ -1,7 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
+    """
+    Пользователь системы.
+    Роли: TEACHER (учитель), STUDENT (ученик), ADMIN (администратор).
+    Поле xp хранит накопленные очки опыта ученика.
+    """
     ROLE_CHOICES = (
         ('TEACHER', 'Мұғалім'),
         ('STUDENT', 'Оқушы'),
@@ -13,7 +19,12 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
 
+
 class Course(models.Model):
+    """
+    Учебный курс.
+    Принадлежит учителю (teacher), к нему записываются ученики (students).
+    """
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught')
@@ -24,7 +35,11 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+
 class Section(models.Model):
+    """
+    Раздел курса. Содержит уроки, сортируется по полю order.
+    """
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
     title = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
@@ -35,7 +50,12 @@ class Section(models.Model):
     def __str__(self):
         return f"{self.course.title} - {self.title}"
 
+
 class Lesson(models.Model):
+    """
+    Урок внутри раздела. Содержит материалы (текст, видео, игры, тесты).
+    Сортируется по полю order.
+    """
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
@@ -46,7 +66,16 @@ class Lesson(models.Model):
     def __str__(self):
         return f"{self.section.title} - {self.title}"
 
+
 class Material(models.Model):
+    """
+    Материал урока. Тип определяет формат:
+    - TEXT: текстовый блок
+    - VIDEO: ссылка на YouTube
+    - FILE: загруженный файл
+    - GAME: интерактивная игра (content = тип игры, data = вопросы)
+    - TEST: обязательный тест (data = вопросы с вариантами)
+    """
     TYPE_CHOICES = (
         ('TEXT', 'Мәтін'),
         ('VIDEO', 'Видео'),
@@ -70,9 +99,15 @@ class Material(models.Model):
     def __str__(self):
         return f"{self.lesson.title} - {self.get_type_display()}"
 
+
 from django.conf import settings
 
+
 class LessonCompletion(models.Model):
+    """
+    Запись о прохождении урока учеником.
+    Создаётся один раз (unique_together). При создании ученику начисляется 10 XP.
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='completed_lessons')
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='completions')
     completed_at = models.DateTimeField(auto_now_add=True)

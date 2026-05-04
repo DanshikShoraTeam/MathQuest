@@ -38,6 +38,10 @@ const BookMascot = () => (
   </svg>
 );
 
+/**
+ * Страница "Мои курсы" для ученика.
+ * Загружает список записанных курсов и вычисляет прогресс по каждому.
+ */
 const StudentCourses = () => {
   const [myCourses, setMyCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +49,10 @@ const StudentCourses = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  /**
+   * Загружает курсы ученика с API и вычисляет количество пройденных/всего уроков.
+   * Результат сохраняется в state myCourses.
+   */
   const fetchData = async () => {
     try {
       const coursesRes = await api.get('courses/');

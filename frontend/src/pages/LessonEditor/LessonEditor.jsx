@@ -28,6 +28,11 @@ const MATERIAL_TYPES = [
   { type: 'FILE', label: 'Файл', icon: DocumentIcon, color: '#58cc02' },
 ];
 
+/**
+ * Редактор урока для учителя.
+ * Позволяет добавлять/редактировать/удалять/переставлять блоки материала:
+ * текст, видео, файл, игра, тест. Для игр — выбор типа и генерация вопросов.
+ */
 const LessonEditor = () => {
   const { lessonId } = useParams();
   const navigate = useNavigate();
@@ -51,76 +56,144 @@ const LessonEditor = () => {
     }
   };
 
+  /**
+   * Генерирует случайные вопросы для выбранного типа игры (5 класс).
+   * @param {string} gameType - тип игры (fast-calc, true-false, sequence, text-task, fill-blank)
+   * @param {number} count - количество вопросов
+   * @returns {Array} массив объектов { q, a, w1, w2, w3, explanation }
+   */
   const generateRandomQuestions = (gameType, count = 10) => {
     const questions = [];
     for (let i = 0; i < count; i++) {
       let q = '', a = '', w1 = '', w2 = '', w3 = '', explanation = '';
-      const n1 = Math.floor(Math.random() * 20) + 1;
-      const n2 = Math.floor(Math.random() * 20) + 1;
 
-      if (gameType === 'fast-calc' || gameType === 'bomb') {
-        const ops = ['+', '-', '*'];
-        const op = ops[Math.floor(Math.random() * ops.length)];
-        let res = 0;
-        if (op === '+') res = n1 + n2;
-        else if (op === '-') res = n1 - n2;
-        else res = n1 * Math.floor(Math.random() * 10);
-        
-        q = `${n1} ${op === '*' ? '×' : op} ${n2} = ?`;
-        a = res.toString();
-        w1 = (res + 2).toString();
-        w2 = (res - 2).toString();
-        w3 = (res + 5).toString();
-        explanation = `${n1} мен ${n2} сандарының ${op === '+' ? 'қосындысы' : op === '-' ? 'айырмасы' : 'көбейтіндісі'} ${res}-ке тең.`;
-      } else if (gameType === 'roulette') {
-        const ops = ['+', '-', '×'];
-        const op = ops[Math.floor(Math.random() * ops.length)];
-        let res = 0;
-        if (op === '+') res = n1 + n2;
-        else if (op === '-') res = n1 - n2;
-        else {
-          const n3 = Math.floor(Math.random() * 10);
-          res = n1 * n3;
-          q = `${n1} ? ${n3} = ${res}`;
+      if (gameType === 'fast-calc') {
+        // Вопросы уровня 5 класса: сложение/вычитание трёхзначных, умножение, проценты
+        const types = ['add', 'sub', 'mul', 'percent'];
+        const t = types[Math.floor(Math.random() * types.length)];
+        if (t === 'add') {
+          const n1 = Math.floor(Math.random() * 900) + 100;
+          const n2 = Math.floor(Math.random() * 900) + 100;
+          const res = n1 + n2;
+          q = `${n1} + ${n2} = ?`; a = res.toString();
+          w1 = (res + 10).toString(); w2 = (res - 10).toString(); w3 = (res + 100).toString();
+          explanation = `${n1} + ${n2} = ${res}`;
+        } else if (t === 'sub') {
+          const n1 = Math.floor(Math.random() * 900) + 200;
+          const n2 = Math.floor(Math.random() * 200) + 50;
+          const res = n1 - n2;
+          q = `${n1} − ${n2} = ?`; a = res.toString();
+          w1 = (res + 5).toString(); w2 = (res - 5).toString(); w3 = (res + 50).toString();
+          explanation = `${n1} − ${n2} = ${res}`;
+        } else if (t === 'mul') {
+          const n1 = Math.floor(Math.random() * 12) + 2;
+          const n2 = Math.floor(Math.random() * 12) + 2;
+          const res = n1 * n2;
+          q = `${n1} × ${n2} = ?`; a = res.toString();
+          w1 = (res + 2).toString(); w2 = (res - 2).toString(); w3 = (res + n2).toString();
+          explanation = `${n1} × ${n2} = ${res}`;
+        } else {
+          const percents = [10, 20, 25, 50];
+          const p = percents[Math.floor(Math.random() * percents.length)];
+          const base = [100, 200, 500, 1000][Math.floor(Math.random() * 4)];
+          const res = (base * p) / 100;
+          q = `${base}-нің ${p}%-і = ?`; a = res.toString();
+          w1 = (res * 2).toString(); w2 = (res + 10).toString(); w3 = (res - 10).toString();
+          explanation = `${base} × ${p} / 100 = ${res}`;
         }
-        if (op !== '×') q = `${n1} ? ${n2} = ${res}`;
-        
-        a = op;
-        const otherOps = ops.filter(o => o !== op);
-        w1 = otherOps[0];
-        w2 = otherOps[1];
-        w3 = '÷';
-        explanation = `Бұл жерде ${op} амалы қолданылған, өйткені ${n1} ${op} ${op === '×' ? q.split('?')[1].split('=')[0].trim() : n2} = ${res}.`;
       } else if (gameType === 'true-false') {
+        // Проверка правильности утверждения (5 класс)
+        const n1 = Math.floor(Math.random() * 500) + 100;
+        const n2 = Math.floor(Math.random() * 500) + 100;
         const isCorrect = Math.random() > 0.5;
-        const res = n1 + n2;
-        const fakeRes = res + (Math.random() > 0.5 ? 2 : -2);
-        q = `${n1} + ${n2} = ${isCorrect ? res : fakeRes}`;
+        const real = n1 + n2;
+        const fake = real + (Math.random() > 0.5 ? 11 : -11);
+        q = `${n1} + ${n2} = ${isCorrect ? real : fake}`;
         a = isCorrect ? 'True' : 'False';
-        explanation = `${n1} + ${n2} = ${res}. Сондықтан бұл жауап ${isCorrect ? 'дұрыс' : 'қате'}.`;
+        explanation = `${n1} + ${n2} = ${real}. Сондықтан бұл жауап ${isCorrect ? 'дұрыс' : 'қате'}.`;
       } else if (gameType === 'sequence') {
-        const start = Math.floor(Math.random() * 10) + 1;
-        const step = Math.floor(Math.random() * 5) + 2;
+        // Арифметическая прогрессия уровня 5 класса
+        const start = Math.floor(Math.random() * 50) + 5;
+        const step = Math.floor(Math.random() * 10) + 2;
         const seq = [start, start + step, start + step * 2, start + step * 3];
         const correct = start + step * 4;
         q = `${seq.join(', ')}, ...`;
         a = correct.toString();
         w1 = (correct + step).toString();
         w2 = (correct + 2).toString();
-        w3 = (correct - 2).toString();
-        explanation = `Бұл тізбек ${step}-ке артып жатыр. Келесі сан: ${correct}.`;
+        w3 = (correct - step).toString();
+        explanation = `Тізбек ${step}-ке артып жатыр. Келесі сан: ${correct}.`;
+      } else if (gameType === 'text-task') {
+        // Текстовые задачи 5 класса
+        const templates = [
+          () => {
+            const apples = Math.floor(Math.random() * 200) + 100;
+            const factor = Math.floor(Math.random() * 3) + 2;
+            const pears = Math.floor(apples / factor);
+            const total = apples + pears;
+            return {
+              q: `Бір қапшықта ${apples} кг алма бар. Алмұрт алмадан ${factor} есе кем. Барлығы қанша кг?`,
+              a: total.toString(),
+              w1: pears.toString(), w2: (total + factor * 10).toString(), w3: (total - pears).toString(),
+              explanation: `Алмұрт = ${apples} ÷ ${factor} = ${pears} кг. Барлығы = ${apples} + ${pears} = ${total} кг`
+            };
+          },
+          () => {
+            const speed = (Math.floor(Math.random() * 5) + 4) * 10;
+            const time = Math.floor(Math.random() * 3) + 2;
+            const dist = speed * time;
+            return {
+              q: `Автобус сағатына ${speed} км жылдамдықпен ${time} сағат жүрді. Жол қанша км?`,
+              a: dist.toString(),
+              w1: (dist + speed).toString(), w2: (speed + time).toString(), w3: (dist - speed).toString(),
+              explanation: `S = v × t = ${speed} × ${time} = ${dist} км`
+            };
+          }
+        ];
+        const tmpl = templates[Math.floor(Math.random() * templates.length)]();
+        q = tmpl.q; a = tmpl.a; w1 = tmpl.w1; w2 = tmpl.w2; w3 = tmpl.w3;
+        explanation = tmpl.explanation;
+      } else if (gameType === 'fill-blank') {
+        // Задачи с вводом ответа (дроби, %, среднее арифметическое)
+        const templates = [
+          () => {
+            const p = [10, 20, 25, 50][Math.floor(Math.random() * 4)];
+            const base = [200, 500, 1000, 2000][Math.floor(Math.random() * 4)];
+            const res = (base * p) / 100;
+            return { q: `${base}-нің ${p}%-і = ?`, a: res.toString(), explanation: `${base} × ${p} / 100 = ${res}` };
+          },
+          () => {
+            const nums = Array.from({ length: 5 }, () => Math.floor(Math.random() * 20) + 70);
+            const avg = Math.round(nums.reduce((s, n) => s + n, 0) / nums.length);
+            return { q: `(${nums.join(' + ')}) ÷ 5 = ?`, a: avg.toString(), explanation: `Қосынды = ${nums.reduce((s, n) => s + n, 0)}, орташа = ${avg}` };
+          }
+        ];
+        const tmpl = templates[Math.floor(Math.random() * templates.length)]();
+        q = tmpl.q; a = tmpl.a; explanation = tmpl.explanation;
+        // fill-blank не требует вариантов, но мы их оставим пустыми
+        w1 = ''; w2 = ''; w3 = '';
       }
       questions.push({ q, a, w1, w2, w3, explanation });
     }
     return questions;
   };
 
+  /**
+   * Обновляет одно поле вопроса в массиве editingData.questions.
+   * @param {number} idx - индекс вопроса
+   * @param {string} field - название поля (q, a, w1, w2, w3, explanation)
+   * @param {string} val - новое значение
+   */
   const updateQ = (idx, field, val) => {
     const newQ = [...editingData.questions];
     newQ[idx][field] = val;
     setEditingData({ ...editingData, questions: newQ });
   };
 
+  /**
+   * Удаляет вопрос по индексу из списка editingData.questions.
+   * @param {number} idx - индекс вопроса
+   */
   const removeQ = (idx) => {
     const newQ = editingData.questions.filter((_, i) => i !== idx);
     setEditingData({ ...editingData, questions: newQ });
@@ -183,26 +256,13 @@ const LessonEditor = () => {
         </div>
       );
     }
-    if (editingContent === 'roulette') {
+    if (editingContent === 'fill-blank') {
+      // Для fill-blank варианты ответа не нужны — только вопрос и правильный ответ
       return (
-        <div key={qIdx} className="q-row roulette-row">
-          <div className="q-inputs-main">
-            <input className="q-main" value={q.q} onChange={e => updateQ(qIdx, 'q', e.target.value)} placeholder="Мысалы: 10 ? 2 = 5" />
-            <div className="ans-grid" style={{ marginTop: '10px' }}>
-              <select className="correct" value={q.a} onChange={e => updateQ(qIdx, 'a', e.target.value)} title="Дұрыс амал">
-                <option value="+">+</option>
-                <option value="-">-</option>
-                <option value="×">×</option>
-                <option value="÷">÷</option>
-              </select>
-              <input value={q.w1} onChange={e => updateQ(qIdx, 'w1', e.target.value)} placeholder="Қате амал 1" />
-              <input value={q.w2} onChange={e => updateQ(qIdx, 'w2', e.target.value)} placeholder="Қате амал 2" />
-              <input value={q.w3} onChange={e => updateQ(qIdx, 'w3', e.target.value)} placeholder="Қате амал 3" />
-            </div>
-          </div>
-          {isTest && (
-            <input className="exp" value={q.explanation} onChange={e => updateQ(qIdx, 'explanation', e.target.value)} placeholder="Түсіндірме..." />
-          )}
+        <div key={qIdx} className="q-row standard-row">
+          <input className="q-main" value={q.q} onChange={e => updateQ(qIdx, 'q', e.target.value)} placeholder="Мысалы: 15 000-нің 20%-і = ?" />
+          <input className="correct" value={q.a} onChange={e => updateQ(qIdx, 'a', e.target.value)} placeholder="Дұрыс жауап (мысалы: 3000)" title="Дұрыс жауап" />
+          <input className="exp" value={q.explanation} onChange={e => updateQ(qIdx, 'explanation', e.target.value)} placeholder="Шешімі / Түсіндірме..." />
           <button className="del-btn" onClick={() => removeQ(qIdx)}><TrashIcon style={{width:16}}/></button>
         </div>
       );
@@ -241,6 +301,10 @@ const LessonEditor = () => {
     }
   };
 
+  /**
+   * Создаёт новый блок материала выбранного типа через API.
+   * @param {string} type - тип материала: TEXT | VIDEO | GAME | TEST | FILE
+   */
   const addMaterial = async (type) => {
     setShowTypePicker(false);
     const defaultContent = type === 'TEXT' ? 'Жаңа мәтін...' : type === 'VIDEO' ? '' : type === 'GAME' ? '' : '';
@@ -267,6 +331,12 @@ const LessonEditor = () => {
     }
   };
 
+  /**
+   * Сохраняет изменения материала на сервер через PATCH-запрос.
+   * Для FILE-типа отправляет FormData с файлом.
+   * @param {number} materialId - ID материала
+   * @param {string} type - тип материала
+   */
   const saveMaterial = async (materialId, type) => {
     try {
       let data;
@@ -304,6 +374,12 @@ const LessonEditor = () => {
     }
   };
 
+  /**
+   * Перемещает блок материала вверх или вниз в списке.
+   * Обновляет порядок (order) у двух затронутых материалов на сервере.
+   * @param {number} index - текущий индекс материала
+   * @param {'up'|'down'} direction - направление перемещения
+   */
   const moveMaterial = async (index, direction) => {
     if ((direction === 'up' && index === 0) || (direction === 'down' && index === materials.length - 1)) return;
     const newIndex = direction === 'up' ? index - 1 : index + 1;
@@ -432,10 +508,10 @@ const LessonEditor = () => {
                             <div className="game-picker-grid">
                               {[
                                 { id: 'fast-calc', name: 'Жылдам есеп', desc: 'Уақытқа есептеу' },
-                                { id: 'true-false', name: 'Шын/Өтірік', desc: 'Логикалық таңдау' },
-                                { id: 'bomb', name: 'Бомба', desc: 'Қателесуге болмайды' },
+                                { id: 'true-false', name: 'Шын/Жалған', desc: 'Логикалық таңдау' },
                                 { id: 'sequence', name: 'Тізбек', desc: 'Сандар ретін тап' },
-                                { id: 'roulette', name: 'Рулетка', desc: 'Кездейсоқ сұрақтар' }
+                                { id: 'text-task', name: 'Мәтіндік есеп', desc: 'Текстовые задачи' },
+                                { id: 'fill-blank', name: 'Бос орын', desc: 'Жауапты өзің жаз' }
                               ].map(g => (
                                 <button
                                   key={g.id}

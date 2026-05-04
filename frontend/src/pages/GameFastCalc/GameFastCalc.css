@@ -240,3 +240,45 @@
     background: #f7f7f7;
     color: var(--text-dark);
 }
+
+/* Кнопка правильного ответа остаётся серой при показе результата */
+.option-btn.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Блок с правильным ответом после ошибки */
+.answer-reveal-box {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: #fff3f3;
+    border: 2px solid #ff4b4b;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #c0392b;
+    animation: slideUp 0.3s ease;
+}
+
+.reveal-explanation {
+    margin-top: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #7f8c8d;
+}
+
+/* Плавное появление экрана результата */
+.fade-in {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

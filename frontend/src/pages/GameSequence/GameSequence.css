@@ -99,3 +99,53 @@
   transform: translateY(4px);
   box-shadow: 0 0 0 transparent;
 }
+
+/* Кнопка правильного ответа */
+.seq-option-btn.correct {
+  background: var(--success);
+  color: #fff;
+  border-color: #46a302;
+  box-shadow: 0 6px 0 #46a302;
+}
+
+/* Неактивные кнопки при показе результата */
+.seq-option-btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Блок с правильным ответом при ошибке */
+.seq-reveal-box {
+  background: #fff3f3;
+  border: 2px solid #ff4b4b;
+  border-radius: 16px;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #c0392b;
+  max-width: 500px;
+  width: 100%;
+  animation: slideUp 0.3s ease;
+}
+
+.result-summary {
+  margin-bottom: 20px;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+/* Плавное появление экрана результата */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -22,6 +22,11 @@ const getYouTubeId = (url) => {
   return match ? match[1] : null;
 };
 
+/**
+ * Страница просмотра урока учеником.
+ * Отображает материалы урока по шагам (навигация вперёд/назад).
+ * При нажатии "Аяқтау" запускает обязательный тест (если есть), затем отмечает урок пройденным.
+ */
 const StudentLessonView = () => {
   const { lessonId } = useParams();
   const navigate = useNavigate();
@@ -46,6 +51,7 @@ const StudentLessonView = () => {
     fetchLesson();
   }, [lessonId]);
 
+  /** Загружает данные урока и сортирует материалы по полю order. */
   const fetchLesson = async () => {
     try {
       const res = await api.get(`lessons/${lessonId}/`);
@@ -58,7 +64,15 @@ const StudentLessonView = () => {
     }
   };
 
+  /**
+   * Переход в игру по типу. Если тип не задан — показывает предупреждение.
+   * @param {string} gameType - идентификатор игры (fast-calc, true-false и т.д.)
+   */
   const handleGameClick = (gameType) => {
+    if (!gameType || gameType.trim() === '') {
+      alert('Мұғалім ойын түрін таңдамаған. Кейінірек қайталаңыз.');
+      return;
+    }
     const mat = materials[activeStep];
     navigate(`/game/${gameType}`, {
       state: {
@@ -69,7 +83,10 @@ const StudentLessonView = () => {
     });
   };
 
-  // Сабақты аяқтау — тест болса алдымен тест, болмаса тікелей аяқтайды
+  /**
+   * Обработчик кнопки "Аяқтау". Если есть обязательный тест — запускает его.
+   * Если тест уже пройден или его нет — сразу завершает урок.
+   */
   const handleComplete = async () => {
     const mandatoryTest = materials.find(m => m.type === 'TEST');
     if (mandatoryTest && !testResults) {
@@ -85,6 +102,10 @@ const StudentLessonView = () => {
     await completeLesson();
   };
 
+  /**
+   * Отправляет запрос на сервер для отметки урока пройденным.
+   * Показывает конфетти-анимацию и через 1.5с возвращает к курсу.
+   */
   const completeLesson = async () => {
     try {
       setIsFinished(true);
@@ -104,6 +125,11 @@ const StudentLessonView = () => {
     }
   };
 
+  /**
+   * Обрабатывает выбор ответа в тесте урока.
+   * Считает очки через scoreRef (не через state — чтобы избежать async-потери значения).
+   * @param {string} ans - выбранный вариант ответа
+   */
   const handleTestAnswer = (ans) => {
     if (isAnswered) return;
     setSelectedAns(ans);
@@ -114,6 +140,7 @@ const StudentLessonView = () => {
     }
   };
 
+  /** Переходит к следующему вопросу теста или закрывает тест с отображением результата. */
   const nextQuestion = () => {
     if (qIdx + 1 < currentTest.data.questions.length) {
       setQIdx(prev => prev + 1);
@@ -129,6 +156,10 @@ const StudentLessonView = () => {
     }
   };
 
+  /**
+   * Рендерит оверлей теста урока с вопросом, вариантами ответов и объяснением.
+   * Возвращает null если тест не загружен.
+   */
   const renderTest = () => {
     if (!currentTest?.data?.questions) return null;
     const q = currentTest.data.questions[qIdx];

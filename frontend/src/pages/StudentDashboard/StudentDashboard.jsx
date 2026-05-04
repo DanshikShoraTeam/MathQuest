@@ -52,6 +52,10 @@ const OwlMascot = () => (
   </svg>
 );
 
+/**
+ * Главная страница ученика (дашборд).
+ * Отображает приветствие, статистику (XP, уровень, стрик) и список текущих курсов.
+ */
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -62,6 +66,7 @@ const StudentDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  /** Загружает данные текущего пользователя и его курсы параллельно. */
   const fetchDashboardData = async () => {
     try {
       const userRes = await api.get('users/me/');

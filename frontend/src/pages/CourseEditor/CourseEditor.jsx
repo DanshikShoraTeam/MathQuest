@@ -16,6 +16,11 @@ import {
 import api from '../../api';
 import './CourseEditor.css';
 
+/**
+ * Редактор курса для учителя.
+ * Вкладки: Структура (разделы/уроки) и Статистика (прогресс учеников).
+ * Позволяет добавлять/удалять разделы и уроки, записывать учеников.
+ */
 const CourseEditor = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -37,6 +42,7 @@ const CourseEditor = () => {
     fetchUsers();
   }, [courseId]);
 
+  /** Загружает данные курса и его разделы с уроками. */
   const fetchCourse = async () => {
     try {
       const res = await api.get(`courses/${courseId}/`);
@@ -50,6 +56,7 @@ const CourseEditor = () => {
     }
   };
 
+  /** Загружает статистику прохождения курса по каждому ученику. */
   const fetchStats = async () => {
     try {
       const res = await api.get(`courses/${courseId}/stats/`);

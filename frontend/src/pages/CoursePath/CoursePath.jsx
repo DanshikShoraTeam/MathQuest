@@ -10,6 +10,10 @@ import api from '../../api';
 import StudentLayout from '../../components/StudentLayout/StudentLayout';
 import './CoursePath.css';
 
+/**
+ * Страница "Путь курса" — отображает список уроков в виде вертикального пути.
+ * Пройденные уроки — зелёные, текущий — подсвечен, остальные заблокированы.
+ */
 const CoursePath = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -21,6 +25,10 @@ const CoursePath = () => {
     fetchCourse();
   }, [courseId]);
 
+  /**
+   * Загружает данные курса, собирает все уроки из разделов и назначает статус каждому.
+   * При ошибке возвращает на страницу курсов.
+   */
   const fetchCourse = async () => {
     try {
       const response = await api.get(`courses/${courseId}/`);
@@ -51,6 +59,14 @@ const CoursePath = () => {
     }
   };
 
+  /**
+   * Определяет статус урока: completed / current / locked.
+   * Первый урок всегда доступен. Следующий открывается после прохождения предыдущего.
+   * @param {Object} lesson - объект урока
+   * @param {number} idx - индекс в общем списке уроков
+   * @param {Array} allLessons - полный список уроков курса
+   * @returns {'completed'|'current'|'locked'} статус
+   */
   const calculateStatus = (lesson, idx, allLessons) => {
     if (lesson.is_completed) return 'completed';
     if (idx === 0) return 'current';

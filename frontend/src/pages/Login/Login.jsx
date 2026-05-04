@@ -4,6 +4,11 @@ import { UserIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outl
 import api from '../../api';
 import './Login.css';
 
+/**
+ * Страница входа и регистрации.
+ * Переключается между формой входа (isLogin=true) и регистрации (isLogin=false).
+ * После успешного входа перенаправляет по роли: /admin, /teacher или /student.
+ */
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
@@ -16,6 +21,12 @@ const LoginPage = () => {
   const [regPassword, setRegPassword] = useState('');
   const [regRole, setRegRole] = useState('STUDENT');
 
+  /**
+   * Обрабатывает отправку формы входа или регистрации.
+   * При входе: сохраняет токены в localStorage, получает роль и перенаправляет.
+   * При регистрации: создаёт пользователя и автоматически выполняет вход.
+   * @param {React.FormEvent} e - событие отправки формы
+   */
   const handleAuth = async (e) => {
     e.preventDefault();
     setError('');

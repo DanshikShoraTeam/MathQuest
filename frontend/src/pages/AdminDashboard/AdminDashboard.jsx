@@ -13,6 +13,11 @@ import api from '../../api';
 import './AdminDashboard.css';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Панель администратора.
+ * Отображает список всех пользователей, позволяет удалять и сбрасывать пароли.
+ * Доступна только пользователям с ролью ADMIN.
+ */
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
@@ -22,6 +27,7 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
 
+  /** Очищает токены и перенаправляет на страницу входа. */
   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');
@@ -31,6 +37,7 @@ const AdminDashboard = () => {
     checkAdmin();
   }, []);
 
+  /** Проверяет роль текущего пользователя. Если не ADMIN — редиректит на логин. */
   const checkAdmin = async () => {
     try {
       const res = await api.get('users/me/');
@@ -45,6 +52,7 @@ const AdminDashboard = () => {
     }
   };
 
+  /** Загружает список всех пользователей системы с API. */
   const fetchUsers = async () => {
     try {
       const res = await api.get('users/');
@@ -56,6 +64,10 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Удаляет пользователя после подтверждения.
+   * @param {number} id - ID пользователя
+   */
   const deleteUser = async (id) => {
     if (!confirm('Шынымен бұл пайдаланушыны жойғыңыз келе ме? Барлық курстары мен деректері жойылады!')) return;
     try {
@@ -66,6 +78,7 @@ const AdminDashboard = () => {
     }
   };
 
+  /** Отправляет запрос на сброс пароля выбранного пользователя. */
   const handleResetPass = async () => {
     if (!newPassword) return alert('Парольді жазыңыз');
     try {

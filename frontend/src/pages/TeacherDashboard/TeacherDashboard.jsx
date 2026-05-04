@@ -15,6 +15,11 @@ import {
 import api from '../../api';
 import './TeacherDashboard.css';
 
+/**
+ * Дашборд учителя.
+ * Вкладки: Курсы, Ученики, Статистика.
+ * Позволяет создавать/удалять курсы и записывать учеников.
+ */
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
@@ -22,7 +27,7 @@ const TeacherDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState('courses'); // 'courses', 'students', 'stats'
+  const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'students' | 'stats'
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -31,6 +36,10 @@ const TeacherDashboard = () => {
     fetchData();
   }, []);
 
+  /**
+   * Параллельно загружает список курсов, учеников и статистику.
+   * Фильтрует пользователей — оставляет только с ролью STUDENT.
+   */
   const fetchData = async () => {
     try {
       const [coursesRes, usersRes, statsRes] = await Promise.all([
@@ -51,6 +60,7 @@ const TeacherDashboard = () => {
     }
   };
 
+  /** Создаёт новый курс с введённым названием и обновляет список. */
   const handleCreateCourse = async () => {
     const title = prompt('Курс атауын енгізіңіз:');
     if (!title) return;
@@ -62,6 +72,7 @@ const TeacherDashboard = () => {
     }
   };
 
+  /** Переименовывает курс через prompt. Сохраняет только если название изменилось. */
   const handleEditCourse = async (course) => {
     const newTitle = prompt('Жаңа атауды енгізіңіз:', course.title);
     if (!newTitle || newTitle === course.title) return;
@@ -73,6 +84,7 @@ const TeacherDashboard = () => {
     }
   };
 
+  /** Удаляет курс после подтверждения. Действие необратимо. */
   const handleDeleteCourse = async (courseId) => {
     if (!confirm('Курсты өшіру керек пе? Бұл әрекетті қайтару мүмкін емес.')) return;
     try {
@@ -83,6 +95,12 @@ const TeacherDashboard = () => {
     }
   };
 
+  /**
+   * Записывает или отписывает ученика от курса (переключение).
+   * Отправляет полный обновлённый список учеников на сервер.
+   * @param {Object} course - объект курса
+   * @param {number} studentId - ID ученика
+   */
   const toggleStudentEnrollment = async (course, studentId) => {
     const currentStudents = [...(course.students || [])];
     const index = currentStudents.indexOf(studentId);
@@ -100,6 +118,7 @@ const TeacherDashboard = () => {
     }
   };
 
+  /** Публикует или снимает с публикации курс после подтверждения. */
   const togglePublish = async (course) => {
     const action = course.is_published ? 'жариядан алғыңыз' : 'жариялағыңыз';
     if (!confirm(`Шынымен курсты ${action} келе ме?`)) return;
@@ -112,11 +131,16 @@ const TeacherDashboard = () => {
     }
   };
 
+  /** Очищает localStorage и перенаправляет на страницу входа. */
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/login';
   };
 
+  /**
+   * Рендерит вкладку "Статистика": недельный график активности,
+   * количество завершений и самый популярный курс.
+   */
   const renderStats = () => {
     const dayMap = {
       'Mon': 'Дүй', 'Tue': 'Сей', 'Wed': 'Сәр', 'Thu': 'Бей', 'Fri': 'Жұм', 'Sat': 'Сен', 'Sun': 'Жек'
